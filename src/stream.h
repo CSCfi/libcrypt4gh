@@ -23,5 +23,8 @@ void crypt4gh_engine_free(engine_t* s);
 int crypt4gh_stream_encrypt_push(engine_t* e, uint8_t* data, size_t data_len);
 int crypt4gh_stream_encrypt_close(engine_t* e);
 
+int crypt4gh_stream_decrypt_push(engine_t* e, uint8_t* data, size_t data_len);
+int crypt4gh_stream_decrypt_close(engine_t* e);
+
 
 #endif /* !__CRYPT4GH_STREAM_H_INCLUDED__ */

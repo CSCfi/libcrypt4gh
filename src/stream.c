@@ -96,3 +96,54 @@ crypt4gh_stream_encrypt_push(engine_t* s, uint8_t* data, size_t data_len){
 	  /* recurse with what's left */
 	  crypt4gh_stream_encrypt_push(s, data, data_len));
 }
+
+
+static int
+crypt4gh_stream_decrypt_flush(engine_t* s){
+  if(!s) return 1;
+
+  int rc = 1;
+  D1("Flushing ciphersegment: pos %zu | left %zu", s->cipher_pos, s->cipher_left);
+
+  if( (rc = crypt4gh_decrypt_segment(s->session_key, s->ciphersegment, s->cipher_pos, s->segment, &(s->segment_pos))) ||
+      (write(s->fd_out, s->segment, s->segment_pos) != s->segment_pos))
+    {
+      D1("Error while decrypting and flushing the segment");
+      rc = 2;
+    }
+  crypt4gh_engine_reset(s);
+  return rc;
+}
+
+int
+crypt4gh_stream_decrypt_close(engine_t* s){
+  return crypt4gh_stream_decrypt_flush(s);
+}
+
+
+int
+crypt4gh_stream_decrypt_push(engine_t* s, uint8_t* data, size_t data_len){
+  if(!s) return 1;
+  if(data_len == 0) return 0; /* nothing to do */
+
+  if( data_len <= s->cipher_left){ /* just add the data */
+    D1("Adding %zu bytes to the ciphersegment", data_len);
+    memcpy(s->ciphersegment + s->cipher_pos, data, data_len);
+    s->cipher_left -= data_len;
+    s->cipher_pos += data_len;
+    return 0;
+  } 
+
+  /* copy what we can, and remember what's left */
+  D1("Adding %zu bytes to the segment", s->segment_left);
+  memcpy(s->ciphersegment + s->cipher_pos, data, s->cipher_left);
+  data += s->cipher_left;
+  data_len -= s->cipher_left;
+  s->cipher_pos += s->cipher_left; /* CRYPT4GH_CIPHERSEGMENT_SIZE */
+  s->cipher_left = 0;
+
+  return (/* encrypt and flush the data to disk */
+	  crypt4gh_stream_decrypt_flush(s) ||
+	  /* recurse with what's left */
+	  crypt4gh_stream_decrypt_push(s, data, data_len));
+}
