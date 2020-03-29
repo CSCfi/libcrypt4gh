@@ -8,6 +8,7 @@
 #include "header.h"
 #include "payload.h"
 #include "stream.h"
+#include "key.h"
 
 int
 main(int argc, const char **argv)
@@ -20,7 +21,16 @@ main(int argc, const char **argv)
 
   uint8_t* k = crypt4gh_session_key_new();
 
-  const uint8_t recipient_pk[32] = {237, 240, 152, 222, 217, 78, 35, 164, 234, 174, 171, 149, 82, 34, 179, 106, 104, 81, 162, 197, 189, 248, 171, 77, 241, 95, 229, 121, 213, 81, 171, 71};
+  /* const uint8_t _recipient_pk[32] = {237, 240, 152, 222, 217, 78, 35, 164, 234, 174, 171, 149, 82, 34, 179, 106, 104, 81, 162, 197, 189, 248, 171, 77, 241, 95, 229, 121, 213, 81, 171, 71}; */
+
+  uint8_t recipient_pk[32];
+  uint8_t* _pk;
+
+  if(argc > 0){
+    _pk = read_public_key(argv[1]);
+    if(!_pk) goto bailout;
+  }
+  memcpy(recipient_pk, _pk, sizeof(recipient_pk)); /* crash and burn if */
 
   H("Recipient pubkey", (uint8_t*)recipient_pk, 32);
    
@@ -59,6 +69,7 @@ main(int argc, const char **argv)
   rc = crypt4gh_stream_encrypt_close(e);
 
 bailout:
+  if(_pk) free(_pk);
   if(e) crypt4gh_engine_free(e);
   sodium_free(k);
   return rc;
