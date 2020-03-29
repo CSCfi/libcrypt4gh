@@ -17,6 +17,12 @@
 
 #define CRYPT4GH_INIT(ret) if (sodium_init() == -1) { return (ret); }
 
+#ifdef DEBUG
+  #define E(fmt,...) fprintf(stderr, "%40s | " fmt "\n", __FUNCTION__, ##__VA_ARGS__)
+#else
+  #define E(fmt,...) fprintf(stderr, fmt "\n", ##__VA_ARGS__)
+#endif
+
 /*
  * Copy a value to cp in little-endian format
  */
