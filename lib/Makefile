@@ -12,7 +12,7 @@ endif
 LIBDIR = .
 
 C4GH_LD_SONAME = -Wl #,-soname,libcrypt4gh.so.2
-C4GH_LIBRARY = libcrypt4gh.so #.2.0
+C4GH_LIBRARY =  #.2.0
 C4GH_HEADERS = debug.h defs.h payload.h header.h packet.h stream.h crypt4gh.h
 C4GH_SOURCES = payload.c header.c packet.c stream.c crypt4gh.c
 C4GH_OBJECTS = $(C4GH_SOURCES:%.c=%.o)
@@ -20,21 +20,21 @@ C4GH_OBJECTS = $(C4GH_SOURCES:%.c=%.o)
 .PHONY: all clean install
 .SUFFIXES: .c .o
 
-all: $(C4GH_LIBRARY) $(C4GH_LIBRARY)
+all: libcrypt4gh.so
 
 $(LIBDIR):
 	@echo "Creating lib dir: $(LIBDIR)"
 	@install -d $(LIBDIR)
 
-$(C4GH_LIBRARY): $(C4GH_HEADERS) $(C4GH_OBJECTS)
+libcrypt4gh.so: $(C4GH_HEADERS) $(C4GH_OBJECTS)
 	@echo "Linking objects into $@"
 	@$(CC) -shared $(C4GH_LD_SONAME) -o $@ $(LIBS) $(C4GH_OBJECTS)
 
-libcrypt4gh.a:
+libcrypt4gh.a: $(C4GH_HEADERS) $(C4GH_OBJECTS)
 	$(AR) rv $@ $(C4GH_OBJECTS)
 	$(RANLIB) $@
 
-%.o: %.c $(C4GH_HEADERS)
+%.o: %.c
 ifdef DEBUG
 	@echo "Compiling $< (debug: $(DEBUG))"
 else
@@ -42,9 +42,9 @@ else
 endif
 	@$(CC) $(CFLAGS) -c -o $@ $<
 
-install: $(C4GH_LIBRARY) | $(LIBDIR)
+install: libcrypt4gh.so | $(LIBDIR)
 	@echo "Installing $< into $(C4GH_LIBDIR)"
 	@install -m 700 $< $(C4GH_LIBDIR)
 
 clean:
-	-rm -f $(C4GH_LIBRARY) $(C4GH_OBJECTS)
+	-rm -f libcrypt4gh.so libcrypt4gh.a $(C4GH_OBJECTS)

@@ -1,7 +1,7 @@
 
 CC     = gcc
 CFLAGS = -g -O2 -I../lib 
-LIBS   = -L../lib -lcrypt4gh -lsodium
+LIBS   = -lsodium -L/Users/daz/_libc4gh/lib -lcrypt4gh
 
 ifdef DEBUG
 CFLAGS += -DDEBUG=$(DEBUG) -g
@@ -12,10 +12,10 @@ endif
 
 all: decrypt
 
-../lib/libcrypt4gh.a:
-	make -C ../lib libcrypt4gh.a
+../lib/libcrypt4gh.so:
+	make -C ../lib libcrypt4gh.so
 
-decrypt: decrypt.c ../lib/libcrypt4gh.a
+decrypt: decrypt.c ../lib/libcrypt4gh.so
 	@echo "Creating $@"
 	@$(CC) $(CFLAGS) -o $@ $< $(LIBS)
 
