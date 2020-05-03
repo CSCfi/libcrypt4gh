@@ -1,0 +1,23 @@
+#***************************************************************************
+#     _____                  _   _  _    _____ _    _ 
+#    / ____|                | | | || |  / ____| |  | |
+#   | |     _ __ _   _ _ __ | |_| || |_| |  __| |__| |
+#   | |    | '__| | | | '_ \| __|__   _| | |_ |  __  |
+#   | |____| |  | |_| | |_) | |_   | | | |__| | |  | |
+#    \_____|_|   \__, | .__/ \__|  |_|  \_____|_|  |_|
+#                 __/ | |                             
+#                |___/|_|                             
+#
+###########################################################################
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: libcrypt4gh
+URL: https://github.com/silverdaz/libcrypt4gh
+Description: Library to encrypt/decrypt files in Crypt4GH format
+Version: @CRYPT4GH_VERSION@
+Libs: -L${libdir} -lcrypt4gh
+Cflags: -I${includedir} @CPPFLAG_CRYPT4GH_STATICLIB@

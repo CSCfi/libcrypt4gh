@@ -15,6 +15,7 @@
   malloc_options = "X";
 */
 
+
 #define CRYPT4GH_INIT(ret) if (sodium_init() == -1) { return (ret); }
 
 #ifdef DEBUG
@@ -48,5 +49,30 @@
     (cp)[2] = (value) >> 16;						\
     (cp)[1] = (value) >> 8;						\
     (cp)[0] = (value); } while (0)
+
+/*
+ * Read 8 bytes from p and 
+ * get its integer representation in little-endian format
+ */
+#define PEEK_U64_LE(p) \
+	(((uint64_t)(((const uint8_t *)(p))[0])      ) | \
+	 ((uint64_t)(((const uint8_t *)(p))[1]) <<  8) | \
+	 ((uint64_t)(((const uint8_t *)(p))[2]) << 16) | \
+	 ((uint64_t)(((const uint8_t *)(p))[3]) << 24) | \
+	 ((uint64_t)(((const uint8_t *)(p))[4]) << 32) | \
+	 ((uint64_t)(((const uint8_t *)(p))[5]) << 40) | \
+	 ((uint64_t)(((const uint8_t *)(p))[6]) << 48) | \
+	 ((uint64_t)(((const uint8_t *)(p))[7]) << 56))
+/* Left shift are filled with zeros */
+
+/*
+ * Read 4 bytes from p and 
+ * get its integer representation in little-endian format
+ */
+#define PEEK_U32_LE(p) \
+	(((uint32_t)(((const uint8_t *)(p))[0])      ) | \
+	 ((uint32_t)(((const uint8_t *)(p))[1]) << 8 ) | \
+	 ((uint32_t)(((const uint8_t *)(p))[2]) << 16) | \
+	 ((uint32_t)(((const uint8_t *)(p))[3]) << 24))
 
 #endif /* !__CRYPT4GH_UTILS_H_INCLUDED__ */

@@ -145,10 +145,10 @@ bailout:
  * Returns 0 if and only if success
  */
 int
-crypt4gh_decrypt_payload(int fd_in, int fd_out, const uint8_t* session_key)
+crypt4gh_decrypt_payload(int fd_in, int fd_out, const uint8_t* session_keys, unsigned int nkeys)
 {
   int rc = 1; /* error */
-
+  int i;
   uint8_t segment[CRYPT4GH_SEGMENT_SIZE];
   ssize_t segment_len;
   uint8_t ciphersegment[CRYPT4GH_CIPHERSEGMENT_SIZE];
@@ -176,15 +176,24 @@ again:
 
   D1("Decrypt a block of size %lu", cipher_len);
 
-  if( (rc = crypt4gh_decrypt_segment(session_key, ciphersegment, cipher_len, segment, &segment_len)) ||
-      (rc = write(fd_out, segment, segment_len) != segment_len)
-      )
-    {
+  uint8_t* session_key = (uint8_t*)session_keys; /* copy pointer */
+  for(i = 0; i < nkeys; i++){
+    rc = crypt4gh_decrypt_segment(session_key, ciphersegment, cipher_len, segment, &segment_len);
+    if(rc){ /* try next session key */
+      D2("Session key %d failed", i);
+      session_key += CRYPT4GH_SESSION_KEY_SIZE;
+      continue; 
+    }
+    D2("Session key %d worked", i);
+    rc = write(fd_out, segment, segment_len);
+    if(rc != segment_len){
+      rc = 3; /* reshape */
       D1("Error processing the cipher segment: [%d] %s", rc, strerror(errno));
-      rc = 3;
       goto bailout;
     }
-  goto again;
+    goto again;
+  }
+  /* we tried all the keys, none worked */
 
 bailout:
   sodium_memzero(segment, CRYPT4GH_SEGMENT_SIZE);

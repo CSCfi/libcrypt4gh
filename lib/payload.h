@@ -19,8 +19,8 @@ int crypt4gh_decrypt_segment(const uint8_t* session_key,
 			     uint8_t ciphersegment[CRYPT4GH_CIPHERSEGMENT_SIZE], ssize_t cipher_len,
 			     uint8_t segment[CRYPT4GH_SEGMENT_SIZE], ssize_t* segment_len);
 
-int crypt4gh_encrypt_payload(int fd_in, int fd_out, const uint8_t* key);
+int crypt4gh_encrypt_payload(int fd_in, int fd_out, const uint8_t* session_key); /* supporting only one */
 
-int crypt4gh_decrypt_payload(int fd_in, int fd_out, const uint8_t* key);
+int crypt4gh_decrypt_payload(int fd_in, int fd_out, const uint8_t* session_keys, unsigned int nkeys);
 
 #endif /* !__CRYPT4GH_PAYLOAD_H_INCLUDED__ */
