@@ -12,7 +12,7 @@
 
 #include "debug.h"
 #include "defs.h"
-#include "cli/base64.h"
+#include "base64.h"
 
 #define PUBKEY_BUFFER_SIZE      1024 /* Large enough */
 #define PUBKEY_BEGIN		"-----BEGIN CRYPT4GH PUBLIC KEY-----\n"

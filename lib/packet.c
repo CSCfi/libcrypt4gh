@@ -50,8 +50,6 @@ parse_packet_data_enc(uint8_t* data, uint8_t data_len,
       return 2;
     }
 
-  H("DATA session key", data+4, CRYPT4GH_SESSION_KEY_SIZE);
-  
   if(session_keys != NULL){
     memcpy(*session_keys, data+4, CRYPT4GH_SESSION_KEY_SIZE);
     *session_keys += CRYPT4GH_SESSION_KEY_SIZE;

@@ -102,7 +102,8 @@ bailout:
 
 int
 header_build(const uint8_t session_key[CRYPT4GH_SESSION_KEY_SIZE],
-	     const uint8_t* seckey, const uint8_t* const* recipient_pubkeys, unsigned int nb_recipients,
+	     const uint8_t* seckey,
+	     const uint8_t* const* recipient_pubkeys, unsigned int nb_recipients,
 	     uint8_t** output, size_t* output_len)
 {
   if(recipient_pubkeys == NULL || nb_recipients == 0){
@@ -211,7 +212,7 @@ header_decrypt_X25519_Chacha20_Poly1305(const uint8_t seckey[crypto_box_SECRETKE
   uint8_t* p = data;
   if(PEEK_U32_LE(p) != X25519_chacha20_ietf_poly1305)
     {
-      D1("Invalid encryption method");
+      E("Invalid encryption method");
       return 1;
     }
   p += 4;
@@ -244,15 +245,15 @@ header_decrypt_X25519_Chacha20_Poly1305(const uint8_t seckey[crypto_box_SECRETKE
   sodium_mprotect_readonly(shared_key);
 
   if(rc){
-    D1("Unable to derive the shared key: %d", rc);
+    E("Unable to derive the shared key: %d", rc);
     goto bailout;
   }
 
   H("Shared key", shared_key, crypto_kx_SESSIONKEYBYTES);
 
   /* decrypted packet (and mac) */
-  H("Encrypted Data", p, data_len);
-  D2("Encrypted Packet length %d", data_len);
+  /* H("Encrypted Data", p, data_len); */
+  D3("Encrypted Packet length %d", data_len);
   unsigned long long decrypted_len;
   rc = crypto_aead_chacha20poly1305_ietf_decrypt(output, &decrypted_len,
 						 NULL,
@@ -260,11 +261,11 @@ header_decrypt_X25519_Chacha20_Poly1305(const uint8_t seckey[crypto_box_SECRETKE
 						 NULL, 0, /* no authenticated data */
 						 nonce, shared_key);
   if(rc){
-    D1("Error %d decrypting the packet", rc);
+    D1("Error decrypting the packet");
     goto bailout;
   }
   
-  D2("Decrypted Packet length %llu", decrypted_len);
+  D3("Decrypted Packet length %llu", decrypted_len);
   if(output_len) *output_len = (unsigned int)decrypted_len; /* small enough, won't drop anything */
 
   rc = 0; /* success */
@@ -364,7 +365,7 @@ header_parse(int fd,
 
       /* valid session key or edit list */
       D1(">>>>>>>>> Packet %d decrypted [%u bytes]", packet, decrypted_len);
-      H("Packet", decrypted, decrypted_len);
+      /* H("Packet", decrypted, decrypted_len); */
 
       /* Parse the packet */
       rc = parse_packet(decrypted, decrypted_len, &session_keys2, nkeys, edit_list, edit_list_len);
