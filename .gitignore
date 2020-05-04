@@ -1,5 +1,7 @@
 *.old
 tests
+autom4te.cache
+Makefile
 
 # Prerequisites
 *.d

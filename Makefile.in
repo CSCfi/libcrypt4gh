@@ -1,0 +1,26 @@
+
+all: libcryp4gh Makefile #tests
+
+configure: configure.ac
+	autoconf
+
+Makefile: Makefile.in config.status
+	./config.status
+
+config.status: configure
+	./config.status --recheck
+
+clean:
+	-$(MAKE) -C lib clean
+	-$(MAKE) -C src clean
+
+cleandist: clean
+	-rm -rf configure config.status config.log autom4te.cache
+	-rm -f Makefile
+
+
+libcryp4gh:
+	$(MAKE) -C lib install
+
+tests:
+	$(MAKE) -C tests
