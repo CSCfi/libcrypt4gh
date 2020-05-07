@@ -177,14 +177,22 @@ parse_args(tokens *ts, Command* commands, Option* options)
 static int
 collected_repeated_arguments(tokens *ts, Option* option, char** buf)
 {
-  int ret = 0, j = 0;
+  int ret = 0, i = 0, j;
   while (ts->current != NULL) {
     if (!strcmp(ts->current, option->olong) ||
 	!strcmp(ts->current, option->oshort))
       { /* found the option, get the value */
 	if (option->narg) {
 	  token_next(ts);
-	  buf[j++] = ts->current;
+	  for(j=0; j<i; j++){ /* check for duplicates */
+	    if(!strcmp(buf[j], ts->current))
+	      break;
+	  }
+	  if(j < i){ /* duplicate */
+	    option->count--;
+	  } else {
+	    buf[i++] = ts->current;
+	  }
 	}
       }
     token_next(ts);
@@ -285,7 +293,7 @@ docopt(int argc, char** argv)
       /* loop again, and collect */
       char** buf = (char**)malloc(option->count * sizeof(char*));
       if(!collected_repeated_arguments(&ts, option, buf)){
-      	args->nrecipients = option->count;
+      	args->nrecipients = option->count; /* adjusted for duplicates */
       	args->recipient_pubkeys = buf;
       }
       break;
