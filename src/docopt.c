@@ -242,7 +242,7 @@ docopt(int argc, char** argv)
       if(command->found) found++;
       break;
     default:
-      E("Unvalid configuration of %s", command->name);
+      E("Invalid configuration of %s", command->name);
       docopt_free(args);
       exit(EXIT_FAILURE);
       break;

@@ -1,14 +1,14 @@
 
-all: libcryp4gh Makefile #tests
+all: libcryp4gh #Makefile #tests
 
-configure: configure.ac
-	autoconf
+# configure: configure.ac
+# 	autoconf
 
-Makefile: Makefile.in config.status
-	./config.status
+# Makefile: Makefile.in config.status
+# 	./config.status
 
-config.status: configure
-	./config.status --recheck
+# config.status: configure
+# 	./config.status --recheck
 
 clean:
 	-$(MAKE) -C lib clean

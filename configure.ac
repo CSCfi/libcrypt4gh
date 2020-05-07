@@ -43,6 +43,16 @@ dnl   AC_MSG_ERROR([unknown endianness]),
 dnl   AC_MSG_ERROR([universal endianness is not supported - compile separately and use lipo(1)])
 dnl )
 
+dnl # Allow user to specify debug level
+dnl AC_ARG_WITH([debug],
+dnl 	[  --with-debug           Specify additional flags to pass to compiler],
+dnl 	[
+dnl 		if test "$withval" -ge 1 && test "$withval" -le 3 ; then \
+dnl 			CFLAGS="$CFLAGS -g -DDEBUG=$withval"
+dnl 		elif test "x$withval" == "xyes"; then
+dnl 			CFLAGS="$CFLAGS -g -DDEBUG=1"
+dnl 		fi
+dnl 	])
 
 AC_CONFIG_FILES([Makefile
 		 lib/Makefile
