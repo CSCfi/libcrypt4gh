@@ -303,6 +303,14 @@ docopt(int argc, char** argv)
 
   }
 
+  /* Final rule: encrypt must have a recipient */
+  if(args->encrypt == 1 && args->nrecipients == 0){
+    E("The encrypt command must be provided a recipient public key");
+    usage();
+    docopt_free(args);
+    exit(EXIT_FAILURE);
+  }
+
   return args;
 }
 
