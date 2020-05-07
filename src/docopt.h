@@ -10,21 +10,19 @@ typedef struct {
     int rearrange;
     int reencrypt;
     /* options without arguments */
-    int help;
     int trim;
-    int version;
     /* options with arguments */
-    char *log;
-    char *range;
-    char *recipient_pk;
+    char* range;
     char *sender_pk;
     char *sk;
-    /* special */
-    const char *usage_pattern;
-    const char *help_message;
+    /* options with arguments, potentially repeated */
+    int nrecipients;
+    char** recipient_pubkeys;
 } DocoptArgs;
 
 
-DocoptArgs docopt(int argc, char** argv, bool help, const char *version);
+DocoptArgs* docopt(int argc, char** argv);
+
+void docopt_free(DocoptArgs*);
 
 #endif /* !__CRYPT4GH_DOCOPT_H_INCLUDED__ */
