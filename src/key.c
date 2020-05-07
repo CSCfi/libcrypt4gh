@@ -12,6 +12,7 @@
 
 #include "debug.h"
 #include "defs.h"
+#include "key.h"
 #include "base64.h"
 
 #define PUBKEY_BUFFER_SIZE      1024 /* Large enough */
@@ -21,26 +22,27 @@
 #define PUBKEY_END_LEN		34 /* (sizeof(PUBKEY_END) - 1) */
 
 
-uint8_t*
-read_public_key(const char *filename)
+int
+read_public_key(const char *filename, uint8_t output[crypto_box_PUBLICKEYBYTES])
 {
 
-  if (!filename) { E("No filename given"); return NULL; }
+  int rc = 0;
+  if (!filename) { E("No filename given"); return 1; }
+  if (!output) { E("No output destination"); return 2; }
 
   char buffer[PUBKEY_BUFFER_SIZE];
   memset(buffer, '\0', PUBKEY_BUFFER_SIZE);
-  uint8_t *data = NULL;
 
   int fd = open(filename, O_RDONLY);
   if (fd == -1) {
-    E("Could not open %s : %s\n", filename, strerror(errno));
-    goto bailout;
+    E("Could not open \"%s\": %s\n", filename, strerror(errno));
+    rc = 3; goto bailout;
   }
 
   ssize_t data_len = read(fd, buffer, sizeof(buffer));
   if (data_len < PUBKEY_BEGIN_LEN + PUBKEY_END_LEN) {
     E("Invalid public key format for %s : %s\n", filename, strerror(errno));
-    goto bailout;
+    rc = 4; goto bailout;
   }
 
   char *data_start = buffer;
@@ -59,24 +61,41 @@ read_public_key(const char *filename)
      )
     { 
       E("Invalid public key format for %s\n", filename);
-      goto bailout;
+      rc = 5; goto bailout;
     }
 
+  D1("Valid key format");
   data_start += PUBKEY_BEGIN_LEN;
 
   /* remove newlines and white spaces */
   while(isspace(*data_start)) data_start++;
   while(isspace(*data_end)){ *data_end = '\0'; data_end--; }
   
-  data = base64_decode((const unsigned char*)data_start, data_end - data_start + 1, (size_t *)&data_len);
+  D1("Base64: %.*s", (int)(data_end - data_start + 1), data_start);
+  uint8_t *data = base64_decode((const unsigned char*)data_start, data_end - data_start + 1, (size_t *)&data_len);
+
+  D1("Base64 decoded size: %zu", data_len);
+  H("Base64 decoded", data, crypto_box_PUBLICKEYBYTES);
 
   if(data_len != crypto_box_PUBLICKEYBYTES){
     E("Invalid public key length for %s", filename);
-    free(data);
-    data = NULL;
+    rc = 6;
+  } else {
+    D1("copying from %p to %p", data, output);
+    memcpy(output, data, (data_len > crypto_box_PUBLICKEYBYTES)?crypto_box_PUBLICKEYBYTES:data_len);
+    rc = 0; /* success */
   }
+  D3("Freeing data at %p", data);
+  free(data);
 
 bailout:
   if (fd != -1 && close(fd) < 0){ E("Error on closing %s : %s", filename, strerror(errno)); }
-  return data;
+  return rc;
 }
+
+/* uint8_t* */
+/* read_secret_key(const char *filename, (char*)(*cb)(void)) */
+/* { */
+/*   E("Not implemented yet"); */
+/*   return NULL; */
+/* }; */

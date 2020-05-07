@@ -18,7 +18,7 @@ typedef enum {
 int
 header_build(const uint8_t session_key[CRYPT4GH_SESSION_KEY_SIZE], /* supporting one session key only */
 	     const uint8_t* seckey,
-	     const uint8_t* const* recipient_pubkeys, unsigned int nb_recipients,
+	     const uint8_t* recipient_pubkeys, unsigned int nb_recipients,
 	     uint8_t** output, size_t* output_len);
 
 int

@@ -8,6 +8,7 @@
 #include "debug.h"
 #include "defs.h"
 #include "docopt.h"
+#include "key.h"
 #include "crypt4gh.h"
 /* #include "passphrase.h" */
 
@@ -74,7 +75,7 @@ main(int argc, const char **argv)
     /* If no seckey supplied, we create an ephemeral key */
     if(opts->sk == NULL){
       crypto_kx_keypair(pubkey, seckey);
-      
+      D1("Creating an ephemeral keypair");
     } else {
 
       /* fetch from file */
@@ -90,15 +91,25 @@ main(int argc, const char **argv)
     }
 
     /* fetch recipients */
-    uint8_t* recipients[opts->nrecipients * crypto_kx_PUBLICKEYBYTES];
+    uint8_t recipients[opts->nrecipients * crypto_kx_PUBLICKEYBYTES];
     int i = 0;
     for(; i < opts->nrecipients; i++){
-      /* rc = get_public_key(opts->recipient_pubkeys[i], recipients[i * crypto_kx_PUBLICKEYBYTES]); */
+      D1("recipients %p", recipients);
+      D1("pubkey %p", &(recipients[i * crypto_kx_PUBLICKEYBYTES]));
+      rc = read_public_key(opts->recipient_pubkeys[i], &(recipients[i * crypto_kx_PUBLICKEYBYTES]));
+      D1("-------- done loading %s", opts->recipient_pubkeys[i]);
+      if(rc){
+	D1("Error loading public key \"%s\"", opts->recipient_pubkeys[i]);
+	goto final;
+      }
+      H("Recipient key", &(recipients[i * crypto_kx_PUBLICKEYBYTES]), crypto_kx_PUBLICKEYBYTES);
     }
 
-    /* rc = crypt4gh_encrypt(STDIN_FILENO, STDOUT_FILENO, */
-    /* 			  seckey, pubkey, */
-    /* 			  (const uint8_t* const*)opts->recipient_pubkeys, opts->nrecipients); */
+    /* Encrypting */
+    D1("Encrypting");
+    rc = crypt4gh_encrypt(STDIN_FILENO, STDOUT_FILENO,
+    			  seckey, pubkey,
+    			  (const uint8_t*)opts->recipient_pubkeys, opts->nrecipients);
 
     goto final;
   }

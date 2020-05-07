@@ -103,7 +103,7 @@ bailout:
 int
 header_build(const uint8_t session_key[CRYPT4GH_SESSION_KEY_SIZE],
 	     const uint8_t* seckey,
-	     const uint8_t* const* recipient_pubkeys, unsigned int nb_recipients,
+	     const uint8_t* recipient_pubkeys, unsigned int nb_recipients,
 	     uint8_t** output, size_t* output_len)
 {
   if(recipient_pubkeys == NULL || nb_recipients == 0){
@@ -165,7 +165,7 @@ header_build(const uint8_t session_key[CRYPT4GH_SESSION_KEY_SIZE],
   for(; i<nb_recipients; i++){  
 
     if(header_encrypt_X25519_Chacha20_Poly1305(data_packet, data_packet_len,
-					       pubkey, seckey, recipient_pubkeys[i],
+					       pubkey, seckey, &recipient_pubkeys[i * crypto_box_PUBLICKEYBYTES],
 					       buf))
       { D1("Error encrypting for recipient %d", i);
 	rc = i+1;

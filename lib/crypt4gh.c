@@ -13,7 +13,7 @@ int
 crypt4gh_encrypt(int fd_in, int fd_out,
 		 const uint8_t seckey[crypto_box_SECRETKEYBYTES],
 		 const uint8_t pubkey[crypto_box_PUBLICKEYBYTES],
-		 const uint8_t* const* recipient_pubkeys, unsigned int nrecipients)
+		 const uint8_t* recipient_pubkeys, unsigned int nrecipients)
 {
   int rc = 1;
 
