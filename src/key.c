@@ -53,8 +53,8 @@ read_public_key(const char *filename, uint8_t output[crypto_box_PUBLICKEYBYTES])
   while(*data_end == '\0' || isspace(*data_end)){ *data_end = '\0'; data_end--;  }
 
   data_end = data_end - PUBKEY_END_LEN + 1;
-  D1("Data start: %.*s", PUBKEY_BEGIN_LEN - 1, data_start);
-  D1("  Data end: %.*s", PUBKEY_END_LEN - 1, data_end + 1); /* skip \n */
+  D3("Data start: %.*s", PUBKEY_BEGIN_LEN - 1, data_start);
+  D3("  Data end: %.*s", PUBKEY_END_LEN - 1, data_end + 1); /* skip \n */
 
   if(strncmp(data_start, PUBKEY_BEGIN, PUBKEY_BEGIN_LEN) != 0 ||
      strncmp(data_end, PUBKEY_END, PUBKEY_END_LEN) != 0
@@ -64,24 +64,24 @@ read_public_key(const char *filename, uint8_t output[crypto_box_PUBLICKEYBYTES])
       rc = 5; goto bailout;
     }
 
-  D1("Valid key format");
+  D3("Valid key format");
   data_start += PUBKEY_BEGIN_LEN;
 
   /* remove newlines and white spaces */
   while(isspace(*data_start)) data_start++;
   while(isspace(*data_end)){ *data_end = '\0'; data_end--; }
   
-  D1("Base64: %.*s", (int)(data_end - data_start + 1), data_start);
+  D3("Base64: %.*s", (int)(data_end - data_start + 1), data_start);
   uint8_t *data = base64_decode((const unsigned char*)data_start, data_end - data_start + 1, (size_t *)&data_len);
 
-  D1("Base64 decoded size: %zu", data_len);
-  H("Base64 decoded", data, crypto_box_PUBLICKEYBYTES);
+  D3("Base64 decoded size: %zu", data_len);
+  H3("Base64 decoded", data, crypto_box_PUBLICKEYBYTES);
 
   if(data_len != crypto_box_PUBLICKEYBYTES){
     E("Invalid public key length for %s", filename);
     rc = 6;
   } else {
-    D1("copying from %p to %p", data, output);
+    D3("copying from %p to %p", data, output);
     memcpy(output, data, (data_len > crypto_box_PUBLICKEYBYTES)?crypto_box_PUBLICKEYBYTES:data_len);
     rc = 0; /* success */
   }

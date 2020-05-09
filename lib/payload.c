@@ -27,7 +27,7 @@ crypt4gh_session_key_new(void){
   /* Mark it read-only */
   sodium_mprotect_readonly(key);
 
-  H("Session key", key, CRYPT4GH_SESSION_KEY_SIZE);
+  H1("Session key", key, CRYPT4GH_SESSION_KEY_SIZE);
 
   return key;
 }
@@ -41,7 +41,7 @@ crypt4gh_encrypt_segment(const uint8_t* session_key,
   unsigned char nonce[NONCE_LEN];
   randombytes_buf(nonce, NONCE_LEN); /* NONCE_LEN * sizeof(char) */
 
-  H("Block nonce", nonce, NONCE_LEN);
+  H2("Block nonce", nonce, NONCE_LEN);
 
   /* Copy the nonce at the beginning of the ciphersegment */
   memcpy(ciphersegment, nonce, NONCE_LEN);
@@ -71,7 +71,7 @@ crypt4gh_decrypt_segment(const uint8_t* session_key,
   unsigned char nonce[NONCE_LEN];
   memcpy(nonce, ciphersegment, NONCE_LEN); /* NONCE_LEN * sizeof(char) */
 
-  H("Block nonce", nonce, NONCE_LEN);
+  H2("Block nonce", nonce, NONCE_LEN);
 
   /* Decrypt */
   unsigned long long len;

@@ -16,6 +16,14 @@ int
 main(int argc, const char **argv)
 {
   int rc = 1;
+  uint8_t* recipients = NULL;
+
+  DocoptArgs* opts = docopt(argc, (char**)argv);
+  
+  if(!opts) return 1; /* arg parse failed */
+ 
+  /* ----------- DECRYPT ----------- */
+  if(opts->decrypt){
 
   /* char* buf[1024]; */
   /* get_passphrase("Enter the passphrase: ", (char*)buf, sizeof(buf)); */
@@ -23,31 +31,9 @@ main(int argc, const char **argv)
   /* D1("passphrase: %s", (char*)buf); */
 
 
-  DocoptArgs* opts = docopt(argc, (char**)argv);
-  
-  if(!opts) return 1; /* arg parse failed */
-
-
-    
-  D1("trim: %d", opts->trim);
-    
-  D1("range: %s", opts->range);
-  D1("recipients: %d", opts->nrecipients);
-  int i=0;
-  for(; i< opts->nrecipients; i++){
-    D1("* recipient_pk: %s", opts->recipient_pubkeys[i]);
-  }
-  D1("sender_pk: %s", opts->sender_pk);
-  D1("sk: %s", opts->sk);
-  
-
-  /* ----------- DECRYPT ----------- */
-  if(opts->decrypt){
-
-
     uint8_t seckey[crypto_box_SECRETKEYBYTES] = { 245, 20, 44, 50, 96, 197, 201, 95, 10, 28, 59, 103, 171, 177, 24, 68, 174, 138, 180, 200, 182, 185, 236, 161, 211, 176, 189, 168, 77, 102, 134, 202 };
   
-    H("Secret key", seckey, crypto_box_SECRETKEYBYTES);
+    H1("Secret key", seckey, crypto_box_SECRETKEYBYTES);
     
     /* get public key from secret key */
     uint8_t pubkey[crypto_box_PUBLICKEYBYTES];
@@ -56,7 +42,7 @@ main(int argc, const char **argv)
       D1("Error retrieving the public key from the secret key");
       return 1;
     }
-    H("Public key", pubkey, crypto_box_PUBLICKEYBYTES);
+    H1("Public key", pubkey, crypto_box_PUBLICKEYBYTES);
 
     
     rc = crypt4gh_decrypt(STDIN_FILENO, STDOUT_FILENO, seckey, pubkey);
@@ -87,30 +73,30 @@ main(int argc, const char **argv)
 	rc = 1;
 	goto final;
       }
-      H("Public key", pubkey, crypto_box_PUBLICKEYBYTES);
+      H1("Public key", pubkey, crypto_box_PUBLICKEYBYTES);
     }
 
     /* fetch recipients */
-    uint8_t recipients[opts->nrecipients * crypto_kx_PUBLICKEYBYTES];
+    recipients = (uint8_t*)malloc(opts->nrecipients * crypto_kx_PUBLICKEYBYTES * sizeof(uint8_t));
+    memset(recipients, '\0', opts->nrecipients * crypto_kx_PUBLICKEYBYTES); /* not really needed */
+
     int i = 0;
     for(; i < opts->nrecipients; i++){
-      D1("recipients %p", recipients);
-      D1("pubkey %p", &(recipients[i * crypto_kx_PUBLICKEYBYTES]));
-      rc = read_public_key(opts->recipient_pubkeys[i], &(recipients[i * crypto_kx_PUBLICKEYBYTES]));
-      D1("-------- done loading %s", opts->recipient_pubkeys[i]);
+      rc = read_public_key(opts->recipient_pubkeys[i],
+			   recipients + (i * crypto_kx_PUBLICKEYBYTES));
       if(rc){
-	D1("Error loading public key \"%s\"", opts->recipient_pubkeys[i]);
-	goto final;
+      	D1("Error loading public key \"%s\"", opts->recipient_pubkeys[i]);
+      	goto final;
       }
-      H("Recipient key", &(recipients[i * crypto_kx_PUBLICKEYBYTES]), crypto_kx_PUBLICKEYBYTES);
     }
 
     /* Encrypting */
     D1("Encrypting");
     rc = crypt4gh_encrypt(STDIN_FILENO, STDOUT_FILENO,
     			  seckey, pubkey,
-    			  (const uint8_t*)opts->recipient_pubkeys, opts->nrecipients);
+    			  (const uint8_t*)recipients, opts->nrecipients);
 
+    D1("Encryption done");
     goto final;
   }
 
@@ -129,5 +115,6 @@ main(int argc, const char **argv)
 
 final:
   docopt_free(opts);
+  if(recipients) free(recipients);
   return rc;
 }

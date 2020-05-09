@@ -311,6 +311,18 @@ docopt(int argc, char** argv)
     exit(EXIT_FAILURE);
   }
 
+
+#ifdef DEBUG
+  D1("trim: %d", args->trim);    
+  D1("range: %s", args->range);
+  D1("recipients: %d", args->nrecipients);
+  int i=0;
+  for(; i< args->nrecipients; i++){
+    D1("* recipient_pk: %s", args->recipient_pubkeys[i]);
+  }
+  D1("sender_pk: %s", args->sender_pk);
+  D1("sk: %s", args->sk);
+#endif
   return args;
 }
 

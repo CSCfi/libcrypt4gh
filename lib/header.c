@@ -14,9 +14,9 @@
 
 static int
 header_encrypt_X25519_Chacha20_Poly1305(const uint8_t* data, size_t data_len,
-					const uint8_t pubkey[crypto_box_PUBLICKEYBYTES],
-					const uint8_t seckey[crypto_box_SECRETKEYBYTES],
-					const uint8_t recipient_pubkey[crypto_box_PUBLICKEYBYTES],
+					const uint8_t pubkey[crypto_kx_PUBLICKEYBYTES],
+					const uint8_t seckey[crypto_kx_SECRETKEYBYTES],
+					const uint8_t recipient_pubkey[crypto_kx_PUBLICKEYBYTES],
 					uint8_t output[CRYPT4GH_HEADER_ENCRYPTED_DATA_PACKET_len])
 {
   int rc = 0;
@@ -28,6 +28,10 @@ header_encrypt_X25519_Chacha20_Poly1305(const uint8_t* data, size_t data_len,
     D1("Unable to allocated memory for the shared key");
     return 1;
   }
+
+  H1("-----    seckey", seckey, crypto_kx_SECRETKEYBYTES);
+  H1("-----    pubkey", pubkey, crypto_kx_PUBLICKEYBYTES);
+  H1("----- recipient", recipient_pubkey, crypto_kx_PUBLICKEYBYTES);
   
   uint8_t ignored[crypto_kx_SESSIONKEYBYTES];
   rc = crypto_kx_server_session_keys(ignored, shared_key, pubkey, seckey, recipient_pubkey);
@@ -39,7 +43,7 @@ header_encrypt_X25519_Chacha20_Poly1305(const uint8_t* data, size_t data_len,
     goto bailout;
   }
 
-  H("Shared key", shared_key, crypto_kx_SESSIONKEYBYTES);
+  H1("Shared key", shared_key, crypto_kx_SESSIONKEYBYTES);
 
   /* Chacha20_Poly1305 */
   unsigned char nonce[NONCE_LEN];
@@ -49,24 +53,24 @@ header_encrypt_X25519_Chacha20_Poly1305(const uint8_t* data, size_t data_len,
 
   /* length */
   PUT_32BIT_LE(p, CRYPT4GH_HEADER_ENCRYPTED_DATA_PACKET_len);
-  D1("Packet length: %d", CRYPT4GH_HEADER_ENCRYPTED_DATA_PACKET_len);
-  H("Packet len", p, 4);
+  D1("Packet length: %d", CRYPT4GH_HEADER_ENCRYPTED_DATA_PACKET_len - 4);
+  H1("Packet len", p, 4);
   p+=4;
 
   /* encryption method */
   PUT_32BIT_LE(p, X25519_chacha20_ietf_poly1305);
   D1("Encryption method: %d", X25519_chacha20_ietf_poly1305);
-  H("enc method", p, 4);
+  H1("enc method", p, 4);
   p+=4;
 
   /* sender's pubkey */
   memcpy(p, pubkey, crypto_box_PUBLICKEYBYTES);
-  H("Sender's pubkey", p, crypto_box_PUBLICKEYBYTES);
+  H1("Sender's pubkey", p, crypto_box_PUBLICKEYBYTES);
   p+=crypto_box_PUBLICKEYBYTES;
 
   /* nonce */
   memcpy(p, nonce, NONCE_LEN);
-  H("nonce", p, NONCE_LEN);
+  H1("nonce", p, NONCE_LEN);
   p+=NONCE_LEN;
 
   /* encrypted session key (and mac) */
@@ -79,7 +83,7 @@ header_encrypt_X25519_Chacha20_Poly1305(const uint8_t* data, size_t data_len,
     D1("Error %d encrypting the data", rc);
     goto bailout;
   }
-  H("Encrypted data", p, len);
+  H1("Encrypted data", p, len);
   p+=len;
  
   if(p-output != CRYPT4GH_HEADER_ENCRYPTED_DATA_PACKET_len){
@@ -103,16 +107,16 @@ bailout:
 int
 header_build(const uint8_t session_key[CRYPT4GH_SESSION_KEY_SIZE],
 	     const uint8_t* seckey,
-	     const uint8_t* recipient_pubkeys, unsigned int nb_recipients,
+	     const uint8_t* recipient_pubkeys, unsigned int nrecipients,
 	     uint8_t** output, size_t* output_len)
 {
-  if(recipient_pubkeys == NULL || nb_recipients == 0){
+  if(recipient_pubkeys == NULL || nrecipients == 0){
     D1("No recipients");
     return 1;
   }
 
   /* Allocate space for n packets + magic_number and version */
-  size_t buflen = (8+4+4+ nb_recipients * CRYPT4GH_HEADER_ENCRYPTED_DATA_PACKET_len);
+  size_t buflen = (8+4+4+ nrecipients * CRYPT4GH_HEADER_ENCRYPTED_DATA_PACKET_len);
 
   uint8_t* buf = (uint8_t*)malloc(buflen);
 
@@ -137,7 +141,7 @@ header_build(const uint8_t session_key[CRYPT4GH_SESSION_KEY_SIZE],
     D1("Error retrieving the public key from the secret key");
     goto bailout;
   }
-  H("Public key", (uint8_t*)pubkey, 32);
+  H1("Public key", (uint8_t*)pubkey, 32);
 
   if(output) *output=buf;
   if(output_len) *output_len=buflen;
@@ -145,27 +149,27 @@ header_build(const uint8_t session_key[CRYPT4GH_SESSION_KEY_SIZE],
   /* Magic number */
   memcpy(buf, MAGIC_NUMBER, 8);
   D1("output magic number: %.8s", MAGIC_NUMBER);
-  H("Magic number", buf, 8);
+  H1("Magic number", buf, 8);
   buf+=8;
   
   /* Version */
   PUT_32BIT_LE(buf, VERSION);
   D1("output version: %d", VERSION);
-  H("Version", buf, 4);
+  H1("Version", buf, 4);
   buf+=4;
 
   /* Number of Packets */
-  PUT_32BIT_LE(buf, nb_recipients);
-  D1("output nb packets: %d", nb_recipients);
-  H("#packets", buf, 4);
+  PUT_32BIT_LE(buf, nrecipients);
+  D1("output nb packets: %d", nrecipients);
+  H1("#packets", buf, 4);
   buf+=4;
 
   /* For each recipients */
   int i=0;
-  for(; i<nb_recipients; i++){  
+  for(; i<nrecipients; i++){  
 
     if(header_encrypt_X25519_Chacha20_Poly1305(data_packet, data_packet_len,
-					       pubkey, seckey, &recipient_pubkeys[i * crypto_box_PUBLICKEYBYTES],
+					       pubkey, seckey, recipient_pubkeys + (i * crypto_box_PUBLICKEYBYTES),
 					       buf))
       { D1("Error encrypting for recipient %d", i);
 	rc = i+1;
@@ -221,14 +225,14 @@ header_decrypt_X25519_Chacha20_Poly1305(const uint8_t seckey[crypto_box_SECRETKE
   /* sender's pubkey */
   uint8_t sender_pubkey[crypto_box_PUBLICKEYBYTES];
   memcpy(sender_pubkey, p, crypto_box_PUBLICKEYBYTES);
-  H("Sender's pubkey", sender_pubkey, crypto_box_PUBLICKEYBYTES);
+  H1("Sender's pubkey", sender_pubkey, crypto_box_PUBLICKEYBYTES);
   p += crypto_box_PUBLICKEYBYTES;
   data_len -= crypto_box_PUBLICKEYBYTES;
   
   /* nonce */
   uint8_t nonce[NONCE_LEN];
   memcpy(nonce, p, NONCE_LEN);
-  H("nonce", p, NONCE_LEN);
+  H1("nonce", p, NONCE_LEN);
   p += NONCE_LEN;
   data_len -= NONCE_LEN;
 
@@ -249,11 +253,11 @@ header_decrypt_X25519_Chacha20_Poly1305(const uint8_t seckey[crypto_box_SECRETKE
     goto bailout;
   }
 
-  H("Shared key", shared_key, crypto_kx_SESSIONKEYBYTES);
+  H1("Shared key", shared_key, crypto_kx_SESSIONKEYBYTES);
 
   /* decrypted packet (and mac) */
-  /* H("Encrypted Data", p, data_len); */
   D3("Encrypted Packet length %d", data_len);
+  H3("Encrypted Data", p, data_len);
   unsigned long long decrypted_len;
   rc = crypto_aead_chacha20poly1305_ietf_decrypt(output, &decrypted_len,
 						 NULL,
@@ -364,8 +368,8 @@ header_parse(int fd,
 	}
 
       /* valid session key or edit list */
-      D1(">>>>>>>>> Packet %d decrypted [%u bytes]", packet, decrypted_len);
-      /* H("Packet", decrypted, decrypted_len); */
+      D3(">>>>>>>>> Packet %d decrypted [%u bytes]", packet, decrypted_len);
+      H3("Packet", decrypted, decrypted_len);
 
       /* Parse the packet */
       rc = parse_packet(decrypted, decrypted_len, &session_keys2, nkeys, edit_list, edit_list_len);

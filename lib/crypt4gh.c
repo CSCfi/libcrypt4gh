@@ -11,8 +11,8 @@
 
 int
 crypt4gh_encrypt(int fd_in, int fd_out,
-		 const uint8_t seckey[crypto_box_SECRETKEYBYTES],
-		 const uint8_t pubkey[crypto_box_PUBLICKEYBYTES],
+		 const uint8_t seckey[crypto_kx_SECRETKEYBYTES],
+		 const uint8_t pubkey[crypto_kx_PUBLICKEYBYTES],
 		 const uint8_t* recipient_pubkeys, unsigned int nrecipients)
 {
   int rc = 1;
@@ -25,7 +25,7 @@ crypt4gh_encrypt(int fd_in, int fd_out,
   size_t h_len = 0;
   rc = header_build(k, seckey, recipient_pubkeys, nrecipients, &h, &h_len);
   D3("Header len: %lu", h_len);
-  /* H("Header", h, h_len); */
+  H3("----- Header", h, h_len);
   
   if(h){
     write(fd_out, h, h_len);
@@ -41,8 +41,8 @@ bailout:
 
 int
 crypt4gh_decrypt(int fd_in, int fd_out,
-		 const uint8_t seckey[crypto_box_SECRETKEYBYTES],
-		 const uint8_t pubkey[crypto_box_PUBLICKEYBYTES])
+		 const uint8_t seckey[crypto_kx_SECRETKEYBYTES],
+		 const uint8_t pubkey[crypto_kx_PUBLICKEYBYTES])
 {
   int rc = 1;
   uint8_t* session_keys = NULL;
@@ -59,13 +59,13 @@ crypt4gh_decrypt(int fd_in, int fd_out,
   }
 
   D1("Found %d session keys", nkeys);
-  H("Session keys", session_keys, nkeys * CRYPT4GH_KEY_SIZE);
+  H1("Session keys", session_keys, nkeys * CRYPT4GH_KEY_SIZE);
 
   int i = 0;
   uint8_t* session_key = session_keys;
   for(; i < nkeys; i++ ){
     D1("Session key %d", i);
-    H("=> Session keys", session_key, CRYPT4GH_KEY_SIZE);
+    H1("=> Session keys", session_key, CRYPT4GH_KEY_SIZE);
     session_key += CRYPT4GH_KEY_SIZE;
   }
 
