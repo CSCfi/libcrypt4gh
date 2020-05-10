@@ -1,5 +1,5 @@
-#ifndef __CRYPT4GH_DOCOPT_H_INCLUDED__
-#define __CRYPT4GH_DOCOPT_H_INCLUDED__
+#ifndef __CRYPT4GH_CLI_H_INCLUDED__
+#define __CRYPT4GH_CLI_H_INCLUDED__
 
 #include <stdbool.h>
 
@@ -18,11 +18,11 @@ typedef struct {
     /* options with arguments, potentially repeated */
     int nrecipients;
     char** recipient_pubkeys;
-} DocoptArgs;
+} options_t;
 
 
-DocoptArgs* docopt(int argc, char** argv);
+options_t* docopt(int argc, char** argv);
 
-void docopt_free(DocoptArgs*);
+void docopt_free(options_t*);
 
-#endif /* !__CRYPT4GH_DOCOPT_H_INCLUDED__ */
+#endif /* !__CRYPT4GH_CLI_H_INCLUDED__ */

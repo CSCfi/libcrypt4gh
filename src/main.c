@@ -7,10 +7,9 @@
 
 #include "debug.h"
 #include "defs.h"
-#include "docopt.h"
-#include "key.h"
 #include "crypt4gh.h"
-/* #include "passphrase.h" */
+#include "key.h"
+#include "cli.h"
 
 int
 main(int argc, const char **argv)
@@ -18,21 +17,19 @@ main(int argc, const char **argv)
   int rc = 1;
   uint8_t* recipients = NULL;
 
-  DocoptArgs* opts = docopt(argc, (char**)argv);
+  options_t* opts = docopt(argc, (char**)argv);
   
   if(!opts) return 1; /* arg parse failed */
  
   /* ----------- DECRYPT ----------- */
   if(opts->decrypt){
 
-  /* char* buf[1024]; */
-  /* get_passphrase("Enter the passphrase: ", (char*)buf, sizeof(buf)); */
+    /* crg.sec */
+    /* uint8_t seckey[crypto_box_SECRETKEYBYTES] = { 245, 20, 44, 50, 96, 197, 201, 95, 10, 28, 59, 103, 171, 177, 24, 68, 174, 138, 180, 200, 182, 185, 236, 161, 211, 176, 189, 168, 77, 102, 134, 202 }; */
 
-  /* D1("passphrase: %s", (char*)buf); */
+    /* fred.sec */
+    uint8_t seckey[crypto_box_SECRETKEYBYTES] = { 162, 69, 254, 84, 81, 253, 182, 18, 106, 140, 139, 220, 94, 113, 27, 40, 140, 68, 237, 31, 61, 74, 80, 255, 242, 141, 122, 23, 218, 86, 140, 25 };
 
-
-    uint8_t seckey[crypto_box_SECRETKEYBYTES] = { 245, 20, 44, 50, 96, 197, 201, 95, 10, 28, 59, 103, 171, 177, 24, 68, 174, 138, 180, 200, 182, 185, 236, 161, 211, 176, 189, 168, 77, 102, 134, 202 };
-  
     H1("Secret key", seckey, crypto_box_SECRETKEYBYTES);
     
     /* get public key from secret key */

@@ -1,7 +1,7 @@
 
 CC     = @CC@
-CFLAGS = @CFLAGS@ -I. -I@top_srcdir@/lib
-LIBS   = -lsodium -L@top_srcdir@/lib -lcrypt4gh
+CFLAGS = @CFLAGS@ -I. -I@top_srcdir@/lib $(shell pkg-config fuse --cflags) $(shell pkg-config libcurl --cflags)
+LIBS   = -lsodium -L@top_srcdir@/lib -lcrypt4gh $(shell pkg-config fuse --libs) $(shell pkg-config libcurl --libs)
 
 prefix=@prefix@
 exec_prefix=@exec_prefix@
@@ -11,8 +11,8 @@ ifdef DEBUG
 CFLAGS += -DDEBUG=$(DEBUG) -g
 endif
 
-C4GH_HEADERS = passphrase.h key.h base64.h
-C4GH_SOURCES = passphrase.c key.c base64.c docopt.c
+C4GH_HEADERS = passphrase.h key.h base64.h cli.h permissions.h json.h $(wildcard jsmn/*.h)
+C4GH_SOURCES = passphrase.c key.c base64.c cli.c permissions.c json.c $(wildcard jsmn/*.c)
 C4GH_OBJECTS = $(C4GH_SOURCES:%.c=%.o)
 
 .PHONY: all clean install
@@ -29,7 +29,17 @@ $(BINDIR):
 
 crypt4gh: @top_srcdir@/lib/libcrypt4gh.so
 crypt4gh: $(C4GH_HEADERS)
-crypt4gh: main.c $(C4GH_OBJECTS)
+crypt4gh: main.o $(C4GH_OBJECTS)
+	@echo "Linking objects into $@"
+	@$(CC) $(CFLAGS) -o $@ $< $(LIBS) $(C4GH_OBJECTS)
+
+crypt4gh-keygen: $(C4GH_HEADERS)
+crypt4gh-keygen: keygen.o $(C4GH_OBJECTS)
+	@echo "Linking objects into $@"
+	@$(CC) $(CFLAGS) -o $@ $< $(LIBS) $(C4GH_OBJECTS)
+
+crypt4gh-fuse: $(C4GH_HEADERS)
+crypt4gh-fuse: fuse.o $(C4GH_OBJECTS)
 	@echo "Linking objects into $@"
 	@$(CC) $(CFLAGS) -o $@ $< $(LIBS) $(C4GH_OBJECTS)
 

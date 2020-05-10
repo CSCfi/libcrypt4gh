@@ -4,7 +4,10 @@ autom4te.cache
 Makefile
 config.log
 config.status
-
+tmp
+crypt4gh-fuse
+crypt4gh-keygen
+crypt4gh
 
 # Prerequisites
 *.d

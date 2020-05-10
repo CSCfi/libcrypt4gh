@@ -6,14 +6,14 @@
 
 #include "debug.h"
 #include "defs.h"
-#include "docopt.h"
+#include "cli.h"
 
 #define PROG "crypt4gh"
 #define PROG_VERSION "1.0"
 
 static void usage(void);
 static void version(void);
-static DocoptArgs* docopt_new(void);
+static options_t* docopt_new(void);
 
 
 /*
@@ -205,7 +205,7 @@ collected_repeated_arguments(tokens *ts, Option* option, char** buf)
  * Main docopt function
  */
 
-DocoptArgs*
+options_t*
 docopt(int argc, char** argv)
 {
   
@@ -226,7 +226,7 @@ docopt(int argc, char** argv)
     break; /* fallthrough*/
   } 
 
-  DocoptArgs* args = docopt_new();
+  options_t* args = docopt_new();
 
   /* commands */
   Command* command = &commands[0];
@@ -327,10 +327,10 @@ docopt(int argc, char** argv)
 }
 
 
-static DocoptArgs*
+static options_t*
 docopt_new(void){
 
-  DocoptArgs* args = (DocoptArgs*)malloc(sizeof(DocoptArgs));
+  options_t* args = (options_t*)malloc(sizeof(options_t));
 
   if(args == NULL || errno == ENOMEM){
     E("Unable to allocate memory");
@@ -352,7 +352,7 @@ docopt_new(void){
 }
 
 void
-docopt_free(DocoptArgs* args){
+docopt_free(options_t* args){
   if(args){
     if(args->recipient_pubkeys) free(args->recipient_pubkeys);
     free(args);
