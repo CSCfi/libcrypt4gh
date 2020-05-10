@@ -11,35 +11,20 @@ ifdef DEBUG
 CFLAGS += -DDEBUG=$(DEBUG) -g
 endif
 
-C4GH_HEADERS = passphrase.h key.h base64.h cli.h permissions.h json.h $(wildcard jsmn/*.h)
-C4GH_SOURCES = passphrase.c key.c base64.c cli.c permissions.c json.c $(wildcard jsmn/*.c)
+C4GH_HEADERS = permissions.h json.h $(wildcard jsmn/*.h)
+C4GH_SOURCES = permissions.c json.c $(wildcard jsmn/*.c) fuse.c
 C4GH_OBJECTS = $(C4GH_SOURCES:%.c=%.o)
 
 .PHONY: all clean install
-.SUFFIXES: .c .o
+.SUFFIXES: .c .o .so
 
-all: crypt4gh
+all: crypt4ghfs
 
 @top_srcdir@/lib/libcrypt4gh.so:
 	make -C @top_srcdir@/lib libcrypt4gh.so
+#	make -C @top_srcdir@/lib install
 
-$(BINDIR):
-	@echo "Creating bin dir: $(BINDIR)"
-	@install -d $(BINDIR)
-
-crypt4gh: @top_srcdir@/lib/libcrypt4gh.so
-crypt4gh: $(C4GH_HEADERS)
-crypt4gh: main.o $(C4GH_OBJECTS)
-	@echo "Linking objects into $@"
-	@$(CC) $(CFLAGS) -o $@ $< $(LIBS) $(C4GH_OBJECTS)
-
-crypt4gh-keygen: $(C4GH_HEADERS)
-crypt4gh-keygen: keygen.o $(C4GH_OBJECTS)
-	@echo "Linking objects into $@"
-	@$(CC) $(CFLAGS) -o $@ $< $(LIBS) $(C4GH_OBJECTS)
-
-crypt4gh-fuse: $(C4GH_HEADERS)
-crypt4gh-fuse: fuse.o $(C4GH_OBJECTS)
+crypt4ghfs: $(C4GH_HEADERS) $(C4GH_OBJECTS) | @top_srcdir@/lib/libcrypt4gh.so
 	@echo "Linking objects into $@"
 	@$(CC) $(CFLAGS) -o $@ $< $(LIBS) $(C4GH_OBJECTS)
 
@@ -51,10 +36,17 @@ else
 endif
 	@$(CC) $(CFLAGS) -c -o $@ $<
 
-install: crypt4gh | $(BINDIR)
+$(BINDIR):
+	@echo "Creating bin dir: $(BINDIR)"
+	@install -d $(BINDIR)
+
+install: crypt4ghfs | $(BINDIR)
 	@echo "Installing $< into $(BINDIR)"
 	@install -m 700 $< $(BINDIR)
 
 clean:
-	-rm -f crypt4gh $(C4GH_OBJECTS)
+	-rm -f cryptgh-fuse $(C4GH_OBJECTS)
+
+cleandist: clean
+	-rm -f Makefile
 

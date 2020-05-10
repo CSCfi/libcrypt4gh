@@ -1,0 +1,15 @@
+  /Users/daz/_libc4gh/cli:
+  total used in directory 152 available 4292031808
+  drwxr-xr-x  17 daz  staff   578B May 10 12:57 .
+  drwxr-xr-x  21 daz  staff   714B May 10 12:56 ..
+  -rw-r--r--   1 daz  staff   1.3K May 10 12:57 Makefile.in
+  -rw-r--r--   1 daz  staff   3.6K May  5 00:42 base64.c
+  -rw-r--r--   1 daz  staff   642B Mar 29 01:00 base64.h
+  -rw-r--r--   1 daz  staff   9.6K May  9 16:17 cli.c
+  -rw-r--r--   1 daz  staff   575B May  9 16:16 cli.h
+  -rw-r--r--   1 daz  staff   5.8K May  9 16:17 key.c
+  -rw-r--r--   1 daz  staff   321B May  7 14:28 key.h
+  -rw-r--r--   1 daz  staff   1.2K May 10 01:50 keygen.c
+  -rw-r--r--   1 daz  staff   3.0K May  9 16:21 main.c
+  -rw-r--r--   1 daz  staff   3.9K May  5 00:38 passphrase.c
+  -rw-r--r--   1 daz  staff   191B May  4 22:31 passphrase.h

@@ -12,11 +12,14 @@ all: libcryp4gh #Makefile #tests
 
 clean:
 	-$(MAKE) -C lib clean
-	-$(MAKE) -C src clean
+	-$(MAKE) -C cli clean
+	-$(MAKE) -C fs clean
 
 cleandist: clean
 	-rm -rf configure config.status config.log autom4te.cache
-	-rm -f Makefile
+	-$(MAKE) -C lib cleandist
+	-$(MAKE) -C cli cleandist
+	-$(MAKE) -C fs cleandist
 
 
 libcryp4gh:

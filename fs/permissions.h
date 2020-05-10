@@ -8,7 +8,8 @@
 typedef struct iterator_s {
   char* endpoint;
   void* buf;
-  struct stat* st;
+  struct stat* st; /* only bit 12-15 are used */
+  off_t offset;
   fuse_fill_dir_t filler;
 } iterator_t;
 

@@ -21,10 +21,13 @@ dnl SECTION_TITLE([Checking for libsodium])
 AC_SEARCH_LIBS([sodium_malloc], [sodium], [], [AC_ERROR("libsodium is required. Install it from https://libsodium.org/.")])
 
 # Checks for header files.
-AC_CHECK_HEADERS([fcntl.h stddef.h stdint.h stdlib.h stdio.h string.h unistd.h sys/ctypes.h sys/stat.h errno.h])
+AC_CHECK_HEADERS([stddef.h stdint.h stdlib.h stdio.h unistd.h termios.h])
+AC_CHECK_HEADERS([fcntl.h string.h errno.h sys/stat.h sys/types.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
+AC_TYPE_UID_T
 AC_C_INLINE
+AC_TYPE_OFF_T
 AC_TYPE_SIZE_T
 AC_TYPE_SSIZE_T
 AC_TYPE_UINT32_T
@@ -56,7 +59,8 @@ dnl 	])
 
 AC_CONFIG_FILES([Makefile
 		 lib/Makefile
-		 src/Makefile])
+		 cli/Makefile
+		 fs/Makefile])
 
 
 AC_OUTPUT

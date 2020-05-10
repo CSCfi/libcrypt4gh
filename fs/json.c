@@ -86,11 +86,7 @@ REALLOC:
     char item_name[t->end - t->start + 1];
     memcpy(&item_name, json + t->start, t->end - t->start);
     item_name[t->end - t->start] = '\0';
-    rc += iterator->filler(iterator->buff, (char*)item_name, iterator->st, 0);
-
-    /* char* item_name = strndup(json + t->start, t->end - t->start); /\* Null-terminated *\/ */
-    /* rc += iterator->filler(iterator->buff, item_name, iterator->st, 0); */
-    /* free(item_name); */
+    rc += iterator->filler(iterator->buf, (char*)item_name, iterator->st, iterator->offset);
   }
 
 #ifdef DEBUG

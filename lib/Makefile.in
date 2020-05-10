@@ -12,7 +12,7 @@ ifdef DEBUG
 CFLAGS += -DDEBUG=$(DEBUG) -g
 endif
 
-C4GH_LD_SONAME = -Wl #,-soname,libcrypt4gh.so.2
+C4GH_LD_SONAME = #-Wl #,-soname,libcrypt4gh.so.2
 C4GH_HEADERS = debug.h defs.h payload.h header.h packet.h stream.h crypt4gh.h
 C4GH_SOURCES = payload.c header.c packet.c stream.c crypt4gh.c
 C4GH_OBJECTS = $(C4GH_SOURCES:%.c=%.o)
@@ -48,3 +48,6 @@ install: libcrypt4gh.so | $(LIBDIR)
 
 clean:
 	-rm -f libcrypt4gh.so libcrypt4gh.a $(C4GH_OBJECTS)
+
+cleandist: clean
+	-rm -f Makefile
