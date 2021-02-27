@@ -8,8 +8,8 @@
 #include "header.h"
 #include "packet.h"
 
-#define MAGIC_NUMBER "crypt4gh"
-#define VERSION 1U
+static char* MAGIC_NUMBER = "crypt4gh";
+static uint32_t VERSION = 1U;
 
 
 static int
@@ -165,7 +165,7 @@ header_build(const uint8_t session_key[CRYPT4GH_SESSION_KEY_SIZE],
   buf+=4;
 
   /* For each recipients */
-  int i=0;
+  unsigned int i=0;
   for(; i<nrecipients; i++){  
 
     if(header_encrypt_X25519_Chacha20_Poly1305(data_packet, data_packet_len,
@@ -178,7 +178,7 @@ header_build(const uint8_t session_key[CRYPT4GH_SESSION_KEY_SIZE],
     buf+=CRYPT4GH_HEADER_ENCRYPTED_DATA_PACKET_len;
   }
   
-  if(output && buf - *output != buflen){
+  if(output && (size_t)(buf - *output) != buflen){
     D1("Error of size for the encrypted data packets");
     D2("output: %p", *output);
     D2("buffer: %p", buf);
@@ -293,7 +293,10 @@ header_parse(int fd,
       return 1;
     }
 
-  CRYPT4GH_INIT(1);
+  if (sodium_init() == -1) {
+    E("Could not initialize libsodium");
+    return 1;
+  }
 
   uint8_t buffer[512]; /* Laaaaarge enough for the preamble and for each packet */
 

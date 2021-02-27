@@ -13,11 +13,11 @@ uint8_t* crypt4gh_session_key_new(void);
 void crypt4gh_session_key_free(uint8_t* k);
 
 int crypt4gh_encrypt_segment(const uint8_t* session_key,
-			     uint8_t segment[CRYPT4GH_SEGMENT_SIZE], ssize_t segment_len,
-			     uint8_t ciphersegment[CRYPT4GH_CIPHERSEGMENT_SIZE], ssize_t* cipher_len);
+			     uint8_t segment[CRYPT4GH_SEGMENT_SIZE], size_t segment_len,
+			     uint8_t ciphersegment[CRYPT4GH_CIPHERSEGMENT_SIZE], size_t* cipher_len);
 int crypt4gh_decrypt_segment(const uint8_t* session_key,
-			     uint8_t ciphersegment[CRYPT4GH_CIPHERSEGMENT_SIZE], ssize_t cipher_len,
-			     uint8_t segment[CRYPT4GH_SEGMENT_SIZE], ssize_t* segment_len);
+			     uint8_t ciphersegment[CRYPT4GH_CIPHERSEGMENT_SIZE], size_t cipher_len,
+			     uint8_t segment[CRYPT4GH_SEGMENT_SIZE], size_t* segment_len);
 
 int crypt4gh_encrypt_payload(int fd_in, int fd_out, const uint8_t* session_key); /* supporting only one */
 

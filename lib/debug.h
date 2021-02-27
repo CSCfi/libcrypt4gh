@@ -6,9 +6,15 @@
 /* #include <unistd.h> */
 #include <stdint.h>
 
+#ifndef _XOPEN_SOURCE
 #define _XOPEN_SOURCE 700 /* for stpcpy */
+#endif
+
 #include <string.h>
 #include <stdio.h>
+
+
+#define E(fmt,...) fprintf(stderr, fmt "\n", ##__VA_ARGS__)
 
 #define D1(...)
 #define D2(...)
@@ -19,19 +25,23 @@
 
 #ifdef DEBUG
 
+#undef E
+#define E(fmt,...) fprintf(stderr, "%40s | " fmt "\n", __FUNCTION__, ##__VA_ARGS__)
+
 #define DEBUG_FUNC(level, fmt, ...) fprintf(stderr, "%40s |" level " " fmt "\n", __FUNCTION__, ##__VA_ARGS__)
 /* #define DEBUG_FUNC(level, fmt, ...) fprintf(stderr, "%-10s(%3d)%22s |" level " " fmt "\n", __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__) */
 
 /*
  * Prints byte array to its hexadecimal representation
  */
-#define H(level,leading,v,len) do {					\
-    fprintf(stderr, "%40s | " level "%s: ", __FUNCTION__, leading);	\
-    int i = (len>0)?len:0;					\
-    uint8_t *_p=(uint8_t*)(v);					\
-    while(i--){ fprintf(stderr, "%02x", *_p ); _p++; }		\
-    fprintf(stderr, "\n");					\
-  } while(0)
+static inline void
+H(const char* level, const char* leading, void* v, size_t len) {
+  fprintf(stderr, EGA_PREFIX "%s%s: ", level, leading);
+    size_t _i = 0;
+    uint8_t* _p = (uint8_t*)v;
+    for(;_i<len;_i++){ fprintf(stderr, "%02x", _p[_i] ); }
+    fprintf(stderr, "\n");
+}
 
 #define LEVEL1 ""
 #define LEVEL2 "    "

@@ -83,7 +83,6 @@ parse_packet_edit_list(uint8_t* data, unsigned int data_len,
       return 2;
     }
 
-  uint64_t pos = 0, offset = 0;
   uint32_t nlengths = PEEK_U32_LE(data);
   data += 4;
   data_len -= 4;

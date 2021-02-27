@@ -8,11 +8,13 @@
 
 #define NONCE_LEN crypto_aead_chacha20poly1305_IETF_NPUBBYTES
 
-
 uint8_t*
 crypt4gh_session_key_new(void){
 
-  CRYPT4GH_INIT(NULL);
+  if (sodium_init() == -1) {
+    E("Could not initialize libsodium");
+    return NULL;
+  }
 
   uint8_t* key = (uint8_t*)sodium_malloc(CRYPT4GH_SESSION_KEY_SIZE * sizeof(uint8_t));
 
@@ -34,8 +36,8 @@ crypt4gh_session_key_new(void){
 
 int
 crypt4gh_encrypt_segment(const uint8_t* session_key,
-			 uint8_t segment[CRYPT4GH_SEGMENT_SIZE], ssize_t segment_len,
-			 uint8_t ciphersegment[CRYPT4GH_CIPHERSEGMENT_SIZE], ssize_t* cipher_len)
+			 uint8_t segment[CRYPT4GH_SEGMENT_SIZE], size_t segment_len,
+			 uint8_t ciphersegment[CRYPT4GH_CIPHERSEGMENT_SIZE], size_t* cipher_len)
 {
   /* New nonce for each segment */
   unsigned char nonce[NONCE_LEN];
@@ -53,7 +55,7 @@ crypt4gh_encrypt_segment(const uint8_t* session_key,
 						     NULL, 0, /* no authenticated data */
 						     NULL, nonce, session_key);
   if(!rc && cipher_len){
-    *cipher_len = (ssize_t)len + NONCE_LEN;
+    *cipher_len = (size_t)len + NONCE_LEN;
     D2("Cipher len: %lu", *cipher_len);
   }
 
@@ -63,8 +65,8 @@ crypt4gh_encrypt_segment(const uint8_t* session_key,
 
 int
 crypt4gh_decrypt_segment(const uint8_t* session_key,
-			 uint8_t ciphersegment[CRYPT4GH_CIPHERSEGMENT_SIZE], ssize_t cipher_len,
-			 uint8_t segment[CRYPT4GH_SEGMENT_SIZE], ssize_t* segment_len)
+			 uint8_t ciphersegment[CRYPT4GH_CIPHERSEGMENT_SIZE], size_t cipher_len,
+			 uint8_t segment[CRYPT4GH_SEGMENT_SIZE], size_t* segment_len)
 {
   /* nonce at the beginning of the ciphersegment */
 
@@ -81,7 +83,7 @@ crypt4gh_decrypt_segment(const uint8_t* session_key,
 						     NULL, 0, /* no authenticated data */
 						     nonce, session_key);
   if(!rc && segment_len){
-    *segment_len = (ssize_t)len;
+    *segment_len = (size_t)len;
     D2("Segment len: %lu", *segment_len);
   }
 
@@ -94,14 +96,15 @@ crypt4gh_decrypt_segment(const uint8_t* session_key,
  * Returns 0 if and only if success
  */
 int
-crypt4gh_encrypt_payload(int fd_in, int fd_out, const uint8_t* session_key)
+crypt4gh_encrypt_payload(int fd_in, int fd_out,
+			 const uint8_t* session_key)
 {
   int rc = 1; /* error */
 
   uint8_t segment[CRYPT4GH_SEGMENT_SIZE];
-  ssize_t segment_len;
+  size_t segment_len;
   uint8_t ciphersegment[CRYPT4GH_CIPHERSEGMENT_SIZE];
-  ssize_t cipher_len;
+  size_t cipher_len;
   
 again:
   rc = 0; /* so far so good */
@@ -145,14 +148,15 @@ bailout:
  * Returns 0 if and only if success
  */
 int
-crypt4gh_decrypt_payload(int fd_in, int fd_out, const uint8_t* session_keys, unsigned int nkeys)
+crypt4gh_decrypt_payload(int fd_in, int fd_out,
+			 const uint8_t* session_keys, unsigned int nkeys)
 {
   int rc = 1; /* error */
-  int i;
+  unsigned int i;
   uint8_t segment[CRYPT4GH_SEGMENT_SIZE];
-  ssize_t segment_len;
+  size_t segment_len;
   uint8_t ciphersegment[CRYPT4GH_CIPHERSEGMENT_SIZE];
-  ssize_t cipher_len;
+  size_t cipher_len;
 
 again:
   rc = 0; /* so far so good */
