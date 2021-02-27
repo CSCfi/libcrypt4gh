@@ -8,36 +8,10 @@
 
 #define NONCE_LEN crypto_aead_chacha20poly1305_IETF_NPUBBYTES
 
-uint8_t*
-crypt4gh_session_key_new(void){
-
-  if (sodium_init() == -1) {
-    E("Could not initialize libsodium");
-    return NULL;
-  }
-
-  uint8_t* key = (uint8_t*)sodium_malloc(CRYPT4GH_SESSION_KEY_SIZE * sizeof(uint8_t));
-
-  if(key == NULL || errno == ENOMEM){
-    D1("Could not allocate the key");
-    return NULL;
-  }
-
-  /* Fill in with random data */
-  randombytes_buf(key, CRYPT4GH_SESSION_KEY_SIZE);
-
-  /* Mark it read-only */
-  sodium_mprotect_readonly(key);
-
-  H1("Session key", key, CRYPT4GH_SESSION_KEY_SIZE);
-
-  return key;
-}
-
 int
 crypt4gh_encrypt_segment(const uint8_t* session_key,
-			 uint8_t segment[CRYPT4GH_SEGMENT_SIZE], size_t segment_len,
-			 uint8_t ciphersegment[CRYPT4GH_CIPHERSEGMENT_SIZE], size_t* cipher_len)
+			 const uint8_t *segment, size_t segment_len,
+			 uint8_t *ciphersegment, size_t* cipher_len)
 {
   /* New nonce for each segment */
   unsigned char nonce[NONCE_LEN];
@@ -202,5 +176,40 @@ again:
 bailout:
   sodium_memzero(segment, CRYPT4GH_SEGMENT_SIZE);
   sodium_memzero(ciphersegment, CRYPT4GH_CIPHERSEGMENT_SIZE);
+  return rc;
+}
+
+# define MIN(a,b) (((a)<(b))?(a):(b))
+
+int
+crypt4gh_encrypt_payload_msg(const uint8_t *msg, size_t mlen,
+			     uint8_t *out, const uint8_t* session_key)
+{
+  int rc;
+  size_t segment_len, cipher_len;
+
+again:
+  segment_len = MIN(mlen, CRYPT4GH_SEGMENT_SIZE);
+  rc = 0; /* so far so good */
+  
+  if(segment_len == 0){ /* No more data to read: Success */
+    goto bailout;
+  }
+
+  /* Otherwise, we have some data */
+  D1("Encrypt a block of size %lu", segment_len);
+
+  if( (rc = crypt4gh_encrypt_segment(session_key, msg, segment_len, out, &cipher_len)))
+    {
+      D1("Error processing the cipher segment: [%d] %s", rc, strerror(errno));
+      rc = 3;
+      goto bailout;
+    }
+  
+  msg += segment_len;
+  mlen -= segment_len;
+  goto again;
+
+bailout:
   return rc;
 }
