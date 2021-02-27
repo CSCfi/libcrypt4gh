@@ -5,10 +5,8 @@ Makefile
 config.log
 config.status
 tmp
-fs/crypt4gh-fuse
-cli/crypt4gh-keygen
-cli/crypt4gh
 configure
+libcrypt4gh.pc
 
 # Prerequisites
 *.d
