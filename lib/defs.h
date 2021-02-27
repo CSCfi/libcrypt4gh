@@ -9,9 +9,13 @@
 #define _GNU_SOURCE /* activate extra prototypes for glibc */
 #endif
 
+#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
-#include <stdio.h>
+#endif
+
+#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
+#endif
 
 #ifdef HAVE_STDINT_H
 # include <stdint.h>
@@ -31,22 +35,23 @@
 
 /* Types */
 
-/* If sys/types.h does not supply u_intXX_t, supply them ourselves */
-/* (or die trying) */
-
-#ifndef HAVE_UINTXX_T
+#ifndef HAVE_STDINT_H
+#    ifndef HAVE_UINTXX_T
 typedef unsigned char uint8_t;
-#  if (SIZEOF_INT == 4)
+#        if (SIZEOF_INT == 4)
 typedef unsigned int uint32_t;
-#  else
-#    error "32 bit int type not found."
-#  endif
+#        else
+#            error "32 bit int type not found."
+#        endif
+#    endif
 #endif
 
-#ifndef HAVE_SIZE_T
+#ifndef HAVE_SYS_TYPES_H
+#    ifndef HAVE_SIZE_T
 typedef unsigned int size_t;
-# define HAVE_SIZE_T
-#endif /* HAVE_SIZE_T */
+#    define HAVE_SIZE_T
+#    endif /* HAVE_SIZE_T */
+#endif
 
 /* Macros */
 
@@ -58,10 +63,6 @@ typedef unsigned int size_t;
 #if !defined(__GNUC__) || (__GNUC__ < 2)
 # define __attribute__(x)
 #endif /* !defined(__GNUC__) || (__GNUC__ < 2) */
-
-#if !defined(HAVE_ATTRIBUTE__BOUNDED__) && !defined(__bounded__)
-# define __bounded__(x, y, z)
-#endif
 
 #if !defined(HAVE_ATTRIBUTE__NONNULL__) && !defined(__nonnull__)
 # define __nonnull__(x)

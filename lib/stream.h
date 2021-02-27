@@ -1,8 +1,7 @@
 #ifndef __CRYPT4GH_STREAM_H_INCLUDED__
 #define __CRYPT4GH_STREAM_H_INCLUDED__
 
-#include <stdint.h>
-
+#include "defs.h"
 #include "payload.h"
 
 typedef struct engine {
@@ -10,11 +9,11 @@ typedef struct engine {
   int fd_out;
   const uint8_t* session_key;
   uint8_t segment[CRYPT4GH_SEGMENT_SIZE];
-  ssize_t segment_pos;
-  ssize_t segment_left;
+  size_t segment_pos;
+  size_t segment_left;
   uint8_t ciphersegment[CRYPT4GH_CIPHERSEGMENT_SIZE];
-  ssize_t cipher_pos;
-  ssize_t cipher_left;
+  size_t cipher_pos;
+  size_t cipher_left;
 } engine_t;
 
 engine_t* crypt4gh_engine_init(int fd_in, int fd_out, const uint8_t* session_key);

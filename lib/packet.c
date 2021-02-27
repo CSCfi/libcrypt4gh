@@ -12,7 +12,10 @@ make_packet_data_enc(header_data_encryption_type encryption_method,
 		     const uint8_t session_key[CRYPT4GH_SESSION_KEY_SIZE],
 		     uint8_t** output, size_t* output_len){
   
-  CRYPT4GH_INIT(1);
+  if (sodium_init() == -1) {
+    E("Could not initialize libsodium");
+    return 1;
+  }
 
   uint8_t* buf = (uint8_t*)sodium_malloc(CRYPT4GH_HEADER_DATA_PACKET_len);
 

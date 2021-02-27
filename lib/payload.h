@@ -1,9 +1,8 @@
 #ifndef __CRYPT4GH_PAYLOAD_H_INCLUDED__
 #define __CRYPT4GH_PAYLOAD_H_INCLUDED__
 
-#include <stdlib.h>
-#include <stdint.h>
 #include <sodium.h>
+#include "defs.h"
 
 #define CRYPT4GH_SESSION_KEY_SIZE crypto_aead_chacha20poly1305_IETF_KEYBYTES
 #define CRYPT4GH_SEGMENT_SIZE 65536
