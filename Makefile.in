@@ -62,7 +62,7 @@ clean:
 	-rm -f libcrypt4gh.so libcrypt4gh.la $(C4GH_OBJECTS)
 	-@rm -f *~
 
-cleandist: clean
+distclean: clean
 	-rm -f Makefile config.h* config.status configure config.log
 	-rm -rf autom4te.cache .depend.old libcrypt4gh.pc
 
