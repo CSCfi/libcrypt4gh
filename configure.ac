@@ -4,7 +4,7 @@
 AC_PREREQ([2.69])
 AC_INIT([crypt4gh], [1.0], [silverdaz@gmail.com])
 
-AC_CONFIG_SRCDIR([payload.c])
+AC_CONFIG_SRCDIR([crypt4gh.c])
 
 AC_LANG([C])
 

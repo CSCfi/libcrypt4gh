@@ -15,7 +15,7 @@ CFLAGS += -DDEBUG=$(DEBUG) -g
 endif
 
 C4GH_LD_SONAME = #-Wl #,-soname,libcrypt4gh.so.2
-C4GH_OBJECTS = payload.o header.o packet.o stream.o err.o crypt4gh.o
+C4GH_OBJECTS = header.o packet.o segment.o payload.o stream.o err.o crypt4gh.o
 
 .PHONY: all clean install
 .SUFFIXES: .c .o

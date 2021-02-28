@@ -2,7 +2,6 @@
 #define __CRYPT4GH_STREAM_H_INCLUDED__
 
 #include "defs.h"
-#include "payload.h"
 
 typedef struct engine {
   int fd_in;

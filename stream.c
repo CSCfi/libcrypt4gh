@@ -3,7 +3,7 @@
 #include <errno.h>
 
 #include "debug.h"
-#include "payload.h"
+#include "segment.h"
 #include "stream.h"
 
 static void
@@ -54,7 +54,7 @@ crypt4gh_stream_encrypt_flush(engine_t* s){
   int rc = 1;
   D1("Flushing segment: pos %zu | left %zu", s->segment_pos, s->segment_left);
 
-  if( (rc = crypt4gh_encrypt_segment(s->session_key, s->segment, s->segment_pos, s->ciphersegment, &(s->cipher_pos))) ||
+  if( (rc = crypt4gh_segment_encrypt(s->session_key, s->segment, s->segment_pos, s->ciphersegment, &(s->cipher_pos))) ||
       (write(s->fd_out, s->ciphersegment, s->cipher_pos) != s->cipher_pos))
     {
       D1("Error while encrypting and flushing the cipher segment");
@@ -105,7 +105,7 @@ crypt4gh_stream_decrypt_flush(engine_t* s){
   int rc = 1;
   D1("Flushing ciphersegment: pos %zu | left %zu", s->cipher_pos, s->cipher_left);
 
-  if( (rc = crypt4gh_decrypt_segment(s->session_key, s->ciphersegment, s->cipher_pos, s->segment, &(s->segment_pos))) ||
+  if( (rc = crypt4gh_segment_decrypt(s->session_key, s->ciphersegment, s->cipher_pos, s->segment, &(s->segment_pos))) ||
       (write(s->fd_out, s->segment, s->segment_pos) != s->segment_pos))
     {
       D1("Error while decrypting and flushing the segment");

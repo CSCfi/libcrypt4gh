@@ -5,8 +5,8 @@
 
 #include "debug.h"
 #include "defs.h"
-#include "header.h"
 #include "packet.h"
+#include "header.h"
 
 static char* MAGIC_NUMBER = "crypt4gh";
 static uint32_t VERSION = 1U;
@@ -46,8 +46,8 @@ header_encrypt_X25519_Chacha20_Poly1305(const uint8_t* data, size_t data_len,
   H1("Shared key", shared_key, crypto_kx_SESSIONKEYBYTES);
 
   /* Chacha20_Poly1305 */
-  unsigned char nonce[NONCE_LEN];
-  randombytes_buf(nonce, NONCE_LEN); /* NONCE_LEN * sizeof(char) */
+  unsigned char nonce[CRYPT4GH_NONCE_SIZE];
+  randombytes_buf(nonce, CRYPT4GH_NONCE_SIZE); /* CRYPT4GH_NONCE_SIZE * sizeof(char) */
 
   uint8_t* p = output; /* record the start */
 
@@ -69,9 +69,9 @@ header_encrypt_X25519_Chacha20_Poly1305(const uint8_t* data, size_t data_len,
   p+=crypto_box_PUBLICKEYBYTES;
 
   /* nonce */
-  memcpy(p, nonce, NONCE_LEN);
-  H1("nonce", p, NONCE_LEN);
-  p+=NONCE_LEN;
+  memcpy(p, nonce, CRYPT4GH_NONCE_SIZE);
+  H1("nonce", p, CRYPT4GH_NONCE_SIZE);
+  p+=CRYPT4GH_NONCE_SIZE;
 
   /* encrypted session key (and mac) */
   unsigned long long len;
@@ -105,10 +105,10 @@ bailout:
 
 
 int
-header_build(const uint8_t session_key[CRYPT4GH_SESSION_KEY_SIZE],
-	     const uint8_t* seckey,
-	     const uint8_t* recipient_pubkeys, unsigned int nrecipients,
-	     uint8_t** output, size_t* output_len)
+crypt4gh_header_build(const uint8_t session_key[CRYPT4GH_SESSION_KEY_SIZE],
+		      const uint8_t* seckey,
+		      const uint8_t* recipient_pubkeys, unsigned int nrecipients,
+		      uint8_t** output, size_t* output_len)
 {
   if(recipient_pubkeys == NULL || nrecipients == 0){
     D1("No recipients");
@@ -127,7 +127,7 @@ header_build(const uint8_t session_key[CRYPT4GH_SESSION_KEY_SIZE],
 
   uint8_t* data_packet = NULL;
   size_t data_packet_len;
-  int rc = make_packet_data_enc(chacha20_ietf_poly1305, session_key, &data_packet, &data_packet_len);
+  int rc = crypt4gh_packet_build_data_enc(chacha20_ietf_poly1305, session_key, &data_packet, &data_packet_len);
 
   if(rc){
     D1("Error making data packet");
@@ -206,7 +206,7 @@ header_decrypt_X25519_Chacha20_Poly1305(const uint8_t seckey[crypto_box_SECRETKE
   int rc = 0;
 
   if(output == NULL ||
-     data_len < 4U + crypto_box_PUBLICKEYBYTES + NONCE_LEN + crypto_box_MACBYTES)
+     data_len < 4U + crypto_box_PUBLICKEYBYTES + CRYPT4GH_NONCE_SIZE + crypto_box_MACBYTES)
     {
       D1("Invalid input parameters");
       return 1;
@@ -230,11 +230,11 @@ header_decrypt_X25519_Chacha20_Poly1305(const uint8_t seckey[crypto_box_SECRETKE
   data_len -= crypto_box_PUBLICKEYBYTES;
   
   /* nonce */
-  uint8_t nonce[NONCE_LEN];
-  memcpy(nonce, p, NONCE_LEN);
-  H1("nonce", p, NONCE_LEN);
-  p += NONCE_LEN;
-  data_len -= NONCE_LEN;
+  uint8_t nonce[CRYPT4GH_NONCE_SIZE];
+  memcpy(nonce, p, CRYPT4GH_NONCE_SIZE);
+  H1("nonce", p, CRYPT4GH_NONCE_SIZE);
+  p += CRYPT4GH_NONCE_SIZE;
+  data_len -= CRYPT4GH_NONCE_SIZE;
 
   /* X25519 shared key */
   uint8_t* shared_key = (uint8_t*)sodium_malloc(crypto_kx_SESSIONKEYBYTES);
@@ -280,11 +280,11 @@ bailout:
 }
 
 int
-header_parse(int fd,
-	     const uint8_t seckey[crypto_box_SECRETKEYBYTES],
-	     const uint8_t pubkey[crypto_box_PUBLICKEYBYTES],
-	     uint8_t** session_keys, unsigned int* nkeys,
-	     uint64_t** edit_list, unsigned int* edit_list_len)
+crypt4gh_header_parse(int fd,
+		      const uint8_t seckey[crypto_box_SECRETKEYBYTES],
+		      const uint8_t pubkey[crypto_box_PUBLICKEYBYTES],
+		      uint8_t** session_keys, unsigned int* nkeys,
+		      uint64_t** edit_list, unsigned int* edit_list_len)
 {
 
   if(session_keys == NULL)
@@ -358,7 +358,7 @@ header_parse(int fd,
 	  goto bail;
 	}
 
-      unsigned int decrypted_len = packet_len - 4U - crypto_box_PUBLICKEYBYTES - NONCE_LEN;
+      unsigned int decrypted_len = packet_len - 4U - crypto_box_PUBLICKEYBYTES - CRYPT4GH_NONCE_SIZE;
       uint8_t decrypted[decrypted_len];
       /* memset(decrypted, '\0', decrypted_len); */
 
@@ -375,7 +375,7 @@ header_parse(int fd,
       H3("Packet", decrypted, decrypted_len);
 
       /* Parse the packet */
-      rc = parse_packet(decrypted, decrypted_len, &session_keys2, nkeys, edit_list, edit_list_len);
+      rc = crypt4gh_packet_parse(decrypted, decrypted_len, &session_keys2, nkeys, edit_list, edit_list_len);
       sodium_memzero(decrypted, decrypted_len);
 
       if(rc){ D1("Invalid packet %d", packet); }

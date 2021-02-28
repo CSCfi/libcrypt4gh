@@ -4,73 +4,14 @@
 
 #include "debug.h"
 #include "defs.h"
+#include "segment.h"
 #include "payload.h"
-
-#define NONCE_LEN crypto_aead_chacha20poly1305_IETF_NPUBBYTES
-
-int
-crypt4gh_encrypt_segment(const uint8_t* session_key,
-			 const uint8_t *segment, size_t segment_len,
-			 uint8_t *ciphersegment, size_t* cipher_len)
-{
-  /* New nonce for each segment */
-  unsigned char nonce[NONCE_LEN];
-  randombytes_buf(nonce, NONCE_LEN); /* NONCE_LEN * sizeof(char) */
-
-  H2("Block nonce", nonce, NONCE_LEN);
-
-  /* Copy the nonce at the beginning of the ciphersegment */
-  memcpy(ciphersegment, nonce, NONCE_LEN);
-
-  /* Encrypt */
-  unsigned long long len;
-  int rc = crypto_aead_chacha20poly1305_ietf_encrypt(ciphersegment + NONCE_LEN, &len,
-						     segment, segment_len,
-						     NULL, 0, /* no authenticated data */
-						     NULL, nonce, session_key);
-  if(!rc && cipher_len){
-    *cipher_len = (size_t)len + NONCE_LEN;
-    D2("Cipher len: %lu", *cipher_len);
-  }
-
-  sodium_memzero(nonce, NONCE_LEN); /* why care? */
-  return rc;
-}
-
-int
-crypt4gh_decrypt_segment(const uint8_t* session_key,
-			 uint8_t ciphersegment[CRYPT4GH_CIPHERSEGMENT_SIZE], size_t cipher_len,
-			 uint8_t segment[CRYPT4GH_SEGMENT_SIZE], size_t* segment_len)
-{
-  /* nonce at the beginning of the ciphersegment */
-
-  unsigned char nonce[NONCE_LEN];
-  memcpy(nonce, ciphersegment, NONCE_LEN); /* NONCE_LEN * sizeof(char) */
-
-  H2("Block nonce", nonce, NONCE_LEN);
-
-  /* Decrypt */
-  unsigned long long len;
-  int rc = crypto_aead_chacha20poly1305_ietf_decrypt(segment, &len,
-						     NULL,
-						     ciphersegment + NONCE_LEN, cipher_len - NONCE_LEN,
-						     NULL, 0, /* no authenticated data */
-						     nonce, session_key);
-  if(!rc && segment_len){
-    *segment_len = (size_t)len;
-    D2("Segment len: %lu", *segment_len);
-  }
-
-  sodium_memzero(nonce, NONCE_LEN); /* why care? */
-  return rc;
-}
-
 
 /*
  * Returns 0 if and only if success
  */
 int
-crypt4gh_encrypt_payload(int fd_in, int fd_out,
+crypt4gh_payload_encrypt(int fd_in, int fd_out,
 			 const uint8_t* session_key)
 {
   int rc = 1; /* error */
@@ -101,7 +42,7 @@ again:
 
   D1("Encrypt a block of size %lu", segment_len);
 
-  if( (rc = crypt4gh_encrypt_segment(session_key, segment, segment_len, ciphersegment, &cipher_len)) ||
+  if( (rc = crypt4gh_segment_encrypt(session_key, segment, segment_len, ciphersegment, &cipher_len)) ||
       (rc = write(fd_out, ciphersegment, cipher_len) != cipher_len)
       )
     {
@@ -122,7 +63,7 @@ bailout:
  * Returns 0 if and only if success
  */
 int
-crypt4gh_decrypt_payload(int fd_in, int fd_out,
+crypt4gh_payload_decrypt(int fd_in, int fd_out,
 			 const uint8_t* session_keys, unsigned int nkeys)
 {
   int rc = 1; /* error */
@@ -156,7 +97,7 @@ again:
 
   uint8_t* session_key = (uint8_t*)session_keys; /* copy pointer */
   for(i = 0; i < nkeys; i++){
-    rc = crypt4gh_decrypt_segment(session_key, ciphersegment, cipher_len, segment, &segment_len);
+    rc = crypt4gh_segment_decrypt(session_key, ciphersegment, cipher_len, segment, &segment_len);
     if(rc){ /* try next session key */
       D2("Session key %d failed", i);
       session_key += CRYPT4GH_SESSION_KEY_SIZE;
@@ -182,8 +123,8 @@ bailout:
 # define MIN(a,b) (((a)<(b))?(a):(b))
 
 int
-crypt4gh_encrypt_payload_msg(const uint8_t *msg, size_t mlen,
-			     uint8_t *out, const uint8_t* session_key)
+crypt4gh_message_encrypt(const uint8_t *msg, size_t mlen,
+			 uint8_t *out, const uint8_t* session_key)
 {
   int rc;
   size_t segment_len, cipher_len;
@@ -199,7 +140,7 @@ again:
   /* Otherwise, we have some data */
   D1("Encrypt a block of size %lu", segment_len);
 
-  if( (rc = crypt4gh_encrypt_segment(session_key, msg, segment_len, out, &cipher_len)))
+  if( (rc = crypt4gh_segment_encrypt(session_key, msg, segment_len, out, &cipher_len)))
     {
       D1("Error processing the cipher segment: [%d] %s", rc, strerror(errno));
       rc = 3;

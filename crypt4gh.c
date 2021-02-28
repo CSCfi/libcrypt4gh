@@ -4,10 +4,11 @@
 
 #include "debug.h"
 #include "header.h"
+#include "segment.h"
 #include "payload.h"
 #include "crypt4gh.h"
 
-#define CRYPT4GH_KEY_SIZE crypto_aead_chacha20poly1305_IETF_KEYBYTES
+#define CRYPT4GH_SESSION_KEY_SIZE crypto_aead_chacha20poly1305_IETF_KEYBYTES
 
 static uint8_t*
 crypt4gh_session_key_new(void){
@@ -49,7 +50,7 @@ crypt4gh_encrypt(int fd_in, int fd_out,
   /* Create the header */
   uint8_t* h = NULL;
   size_t h_len = 0;
-  rc = header_build(k, seckey, recipient_pubkeys, nrecipients, &h, &h_len);
+  rc = crypt4gh_header_build(k, seckey, recipient_pubkeys, nrecipients, &h, &h_len);
   D3("Header len: %lu", h_len);
   H3("----- Header", h, h_len);
   
@@ -58,7 +59,7 @@ crypt4gh_encrypt(int fd_in, int fd_out,
     free(h);
   } else goto bailout;
 
-  rc = crypt4gh_encrypt_payload(fd_in, fd_out, k);
+  rc = crypt4gh_payload_encrypt(fd_in, fd_out, k);
 
 bailout:
   sodium_free(k);
@@ -76,7 +77,7 @@ crypt4gh_decrypt(int fd_in, int fd_out,
   uint64_t* edit_list = NULL;
   unsigned int edit_list_len = 0;
 
-  rc = header_parse(fd_in, seckey, pubkey,
+  rc = crypt4gh_header_parse(fd_in, seckey, pubkey,
 		    &session_keys, &nkeys, &edit_list, &edit_list_len);
 
   if(nkeys == 0){
@@ -85,15 +86,15 @@ crypt4gh_decrypt(int fd_in, int fd_out,
   }
 
   D1("Found %d session keys", nkeys);
-  H1("Session keys", session_keys, nkeys * CRYPT4GH_KEY_SIZE);
+  H1("Session keys", session_keys, nkeys * CRYPT4GH_SESSION_KEY_SIZE);
 
 #if DEBUG
   int i = 0;
   uint8_t* session_key = session_keys;
   for(; i < nkeys; i++ ){
     D1("Session key %d", i);
-    H1("=> Session keys", session_key, CRYPT4GH_KEY_SIZE);
-    session_key += CRYPT4GH_KEY_SIZE;
+    H1("=> Session keys", session_key, CRYPT4GH_SESSION_KEY_SIZE);
+    session_key += CRYPT4GH_SESSION_KEY_SIZE;
   }
 #endif
 
@@ -103,7 +104,7 @@ crypt4gh_decrypt(int fd_in, int fd_out,
     return 2;
   }
   
-  rc = crypt4gh_decrypt_payload(fd_in, fd_out,
+  rc = crypt4gh_payload_decrypt(fd_in, fd_out,
 				(const uint8_t*)(session_keys), nkeys);
 
   return rc;
@@ -134,7 +135,7 @@ crypt4gh_encrypt_msg(const uint8_t *msg, unsigned long long mlen,
   /* Create the header */
   uint8_t* h = NULL;
   size_t hlen = 0;
-  rc = header_build(k, seckey, recipient_pubkeys, nrecipients, &h, &hlen);
+  rc = crypt4gh_header_build(k, seckey, recipient_pubkeys, nrecipients, &h, &hlen);
   D3("Header len: %lu", h_len);
   H3("----- Header", h, h_len);
   
@@ -150,7 +151,7 @@ crypt4gh_encrypt_msg(const uint8_t *msg, unsigned long long mlen,
   memcpy(buf, h, hlen);
   free(h);
 
-  rc = crypt4gh_encrypt_payload_msg(msg, mlen, buf + hlen, k);
+  rc = crypt4gh_message_encrypt(msg, mlen, buf + hlen, k);
 
 bailout:
   sodium_free(k);
