@@ -151,7 +151,7 @@ crypt4gh_encrypt_msg(const uint8_t *msg, unsigned long long mlen,
   memcpy(buf, h, hlen);
   free(h);
 
-  rc = crypt4gh_message_encrypt(msg, mlen, buf + hlen, k);
+  rc = crypt4gh_payload_encrypt_msg(msg, mlen, buf + hlen, k);
 
 bailout:
   sodium_free(k);

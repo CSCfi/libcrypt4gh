@@ -123,8 +123,8 @@ bailout:
 # define MIN(a,b) (((a)<(b))?(a):(b))
 
 int
-crypt4gh_message_encrypt(const uint8_t *msg, size_t mlen,
-			 uint8_t *out, const uint8_t* session_key)
+crypt4gh_payload_encrypt_msg(const uint8_t *msg, size_t mlen,
+			     uint8_t *out, const uint8_t* session_key)
 {
   int rc;
   size_t segment_len, cipher_len;

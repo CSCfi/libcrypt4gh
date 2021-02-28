@@ -3,11 +3,12 @@
 #include <errno.h>
 
 #include "debug.h"
+#include "defs.h"
 #include "segment.h"
 #include "stream.h"
 
 static void
-crypt4gh_engine_reset(engine_t* s){
+crypt4gh_stream_reset(stream_t* s){
   if(!s) return;
 
   s->segment_pos = 0;
@@ -18,37 +19,37 @@ crypt4gh_engine_reset(engine_t* s){
   sodium_memzero(s->ciphersegment, CRYPT4GH_CIPHERSEGMENT_SIZE);
 }
 
-engine_t*
-crypt4gh_engine_init(int fd_in, int fd_out, const uint8_t* session_key){
+stream_t*
+crypt4gh_stream_init(int fd_in, int fd_out, const uint8_t* session_key){
 
   if(!session_key) return NULL;
 
-  engine_t* s = (engine_t*)malloc(sizeof(engine_t));
+  stream_t* s = (stream_t*)malloc(sizeof(stream_t));
 
-  if(s == NULL || errno == ENOMEM){ D1("Could not allocate the engine"); return NULL; }
+  if(s == NULL || errno == ENOMEM){ D1("Could not allocate the stream engine"); return NULL; }
 
   s->session_key = session_key;
   s->fd_in = fd_in;
   s->fd_out = fd_out;
 
-  crypt4gh_engine_reset(s);
+  crypt4gh_stream_reset(s);
   return s;
 }
 
 void
-crypt4gh_engine_free(engine_t* s){
+crypt4gh_stream_free(stream_t* s){
   if(!s) return;
 
   /* Clear the struct */
   /* sodium_free(s->session_key); */
   /* sodium_memzero(s->segment, CRYPT4GH_SEGMENT_SIZE); */
   /* sodium_memzero(s->ciphersegment, CRYPT4GH_CIPHERSEGMENT_SIZE); */
-  sodium_memzero(s, sizeof(engine_t));
+  sodium_memzero(s, sizeof(stream_t));
   free(s);
 }
 
 static int
-crypt4gh_stream_encrypt_flush(engine_t* s){
+crypt4gh_stream_encrypt_flush(stream_t* s){
   if(!s) return 1;
 
   int rc = 1;
@@ -60,18 +61,18 @@ crypt4gh_stream_encrypt_flush(engine_t* s){
       D1("Error while encrypting and flushing the cipher segment");
       rc = 2;
     }
-  crypt4gh_engine_reset(s);
+  crypt4gh_stream_reset(s);
   return rc;
 }
 
 int
-crypt4gh_stream_encrypt_close(engine_t* s){
+crypt4gh_stream_encrypt_close(stream_t* s){
   return crypt4gh_stream_encrypt_flush(s);
 }
 
 
 int
-crypt4gh_stream_encrypt_push(engine_t* s, uint8_t* data, size_t data_len){
+crypt4gh_stream_encrypt_push(stream_t* s, uint8_t* data, size_t data_len){
   if(!s) return 1;
   if(data_len == 0) return 0; /* nothing to do */
 
@@ -99,7 +100,7 @@ crypt4gh_stream_encrypt_push(engine_t* s, uint8_t* data, size_t data_len){
 
 
 static int
-crypt4gh_stream_decrypt_flush(engine_t* s){
+crypt4gh_stream_decrypt_flush(stream_t* s){
   if(!s) return 1;
 
   int rc = 1;
@@ -111,18 +112,18 @@ crypt4gh_stream_decrypt_flush(engine_t* s){
       D1("Error while decrypting and flushing the segment");
       rc = 2;
     }
-  crypt4gh_engine_reset(s);
+  crypt4gh_stream_reset(s);
   return rc;
 }
 
 int
-crypt4gh_stream_decrypt_close(engine_t* s){
+crypt4gh_stream_decrypt_close(stream_t* s){
   return crypt4gh_stream_decrypt_flush(s);
 }
 
 
 int
-crypt4gh_stream_decrypt_push(engine_t* s, uint8_t* data, size_t data_len){
+crypt4gh_stream_decrypt_push(stream_t* s, uint8_t* data, size_t data_len){
   if(!s) return 1;
   if(data_len == 0) return 0; /* nothing to do */
 

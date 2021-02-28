@@ -3,7 +3,7 @@
 
 #include "defs.h"
 
-typedef struct engine {
+typedef struct stream_s {
   int fd_in;
   int fd_out;
   const uint8_t* session_key;
@@ -13,16 +13,16 @@ typedef struct engine {
   uint8_t ciphersegment[CRYPT4GH_CIPHERSEGMENT_SIZE];
   size_t cipher_pos;
   size_t cipher_left;
-} engine_t;
+} stream_t;
 
-engine_t* crypt4gh_engine_init(int fd_in, int fd_out, const uint8_t* session_key);
-void crypt4gh_engine_free(engine_t* s);
+stream_t* crypt4gh_stream_init(int fd_in, int fd_out, const uint8_t* session_key);
+void crypt4gh_stream_free(stream_t* s);
 
-int crypt4gh_stream_encrypt_push(engine_t* e, uint8_t* data, size_t data_len);
-int crypt4gh_stream_encrypt_close(engine_t* e);
+int crypt4gh_stream_encrypt_push(stream_t* e, uint8_t* data, size_t data_len);
+int crypt4gh_stream_encrypt_close(stream_t* e);
 
-int crypt4gh_stream_decrypt_push(engine_t* e, uint8_t* data, size_t data_len);
-int crypt4gh_stream_decrypt_close(engine_t* e);
+int crypt4gh_stream_decrypt_push(stream_t* e, uint8_t* data, size_t data_len);
+int crypt4gh_stream_decrypt_close(stream_t* e);
 
 
 #endif /* !__CRYPT4GH_STREAM_H_INCLUDED__ */
