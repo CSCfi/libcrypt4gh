@@ -2,13 +2,13 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([crypt4gh], [1.0], [silverdaz@gmail.com])
+AC_INIT([libcrypt4gh], [1.0], [silverdaz@gmail.com])
 
 AC_CONFIG_SRCDIR([crypt4gh.c])
+AC_CONFIG_HEADER([config.h])
 
 AC_LANG([C])
 
-AC_CONFIG_HEADER([config.h])
 AC_PROG_CC([cc gcc])
 AC_PROG_CC #([cc clang gcc])
 # AC_C_BIGENDIAN
