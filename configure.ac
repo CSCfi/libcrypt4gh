@@ -185,7 +185,7 @@ AC_ARG_WITH([debug-prefix],
 
 #######################################################
 
-AC_SUBST([DEPEND], [$(cat $srcdir/.depend)])
+AC_SUBST([DEPEND], [$(cat $srcdir/src/.depend)])
 
 AC_CONFIG_FILES([Makefile
                 libcrypt4gh.pc])
