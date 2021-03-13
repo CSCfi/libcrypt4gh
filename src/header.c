@@ -331,6 +331,13 @@ crypt4gh_header_parse(int fd,
 
   /* Preallocate the sodium region (maybe one too much) */
   uint8_t* session_keys2 = (uint8_t*)sodium_malloc(CRYPT4GH_SESSION_KEY_SIZE * sizeof(uint8_t) * npackets);
+
+  if(session_keys2 == NULL || errno == ENOMEM){
+    D1("Could not allocate the buffer for the session keys");
+    rc = 1;
+    goto bail;
+  }
+
   *session_keys = session_keys2;
 
   for (; packet < npackets; packet++)

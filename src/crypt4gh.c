@@ -146,6 +146,13 @@ crypt4gh_encrypt_msg(const uint8_t *msg, unsigned long long mlen,
   size_t nsegments = (size_t)(mlen / CRYPT4GH_SEGMENT_SIZE) + 1; /* number of segments */
   buflen = hlen + mlen + (nsegments * (CRYPT4GH_CIPHERSEGMENT_SIZE - CRYPT4GH_SEGMENT_SIZE)); /* adding cipher diffs */
   buf = (uint8_t*)malloc(buflen * sizeof(uint8_t));
+
+  if(buf == NULL || errno == ENOMEM){
+    D1("Could not allocate the encryption buffer");
+    rc = 1;
+    goto bailout;
+  }
+
   memset(buf, '\0', buflen);
 
   /* copy the header */
