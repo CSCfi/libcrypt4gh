@@ -1,7 +1,7 @@
 #ifndef __CRYPT4GH_STREAM_H_INCLUDED__
 #define __CRYPT4GH_STREAM_H_INCLUDED__
 
-#include "defs.h"
+#include "crypt4gh/defs.h"
 
 typedef struct stream_s {
   int fd_in;

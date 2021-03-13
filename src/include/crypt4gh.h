@@ -2,7 +2,8 @@
 #define __CRYPT4GH_H_INCLUDED__
 
 #include <sodium.h>
-#include "defs.h"
+
+#include "crypt4gh/defs.h"
 
 int
 crypt4gh_encrypt(int fd_in, int fd_out,

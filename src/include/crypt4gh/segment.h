@@ -1,7 +1,7 @@
 #ifndef __CRYPT4GH_SEGMENT_H_INCLUDED__
 #define __CRYPT4GH_SEGMENT_H_INCLUDED__
 
-#include "defs.h"
+#include "crypt4gh/defs.h"
 
 int crypt4gh_segment_encrypt(const uint8_t* session_key,
 			     const uint8_t *segment, size_t segment_len,

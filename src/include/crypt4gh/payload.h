@@ -1,7 +1,7 @@
 #ifndef __CRYPT4GH_PAYLOAD_H_INCLUDED__
 #define __CRYPT4GH_PAYLOAD_H_INCLUDED__
 
-#include "defs.h"
+#include "crypt4gh/defs.h"
 
 int crypt4gh_payload_encrypt(int fd_in, int fd_out, const uint8_t* session_key); /* supporting only one */
 

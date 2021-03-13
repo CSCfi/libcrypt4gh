@@ -13,8 +13,11 @@
 #include <string.h>
 #include <stdio.h>
 
+#ifndef DEBUG_PREFIX
+#define DEBUG_PREFIX "libcrypt4gh"
+#endif
 
-#define E(fmt,...) fprintf(stderr, fmt "\n", ##__VA_ARGS__)
+#define E(fmt,...) fprintf(stderr, DEBUG_PREFIX " " fmt "\n", ##__VA_ARGS__)
 
 #define D1(...)
 #define D2(...)
@@ -23,10 +26,11 @@
 #define H2(...)
 #define H3(...)
 
+
 #ifdef DEBUG
 
 #undef E
-#define E(fmt,...) fprintf(stderr, "%40s | " fmt "\n", __FUNCTION__, ##__VA_ARGS__)
+#define E(fmt,...) fprintf(stderr, "%40s | " DEBUG_PREFIX fmt "\n", __FUNCTION__, ##__VA_ARGS__)
 
 #define DEBUG_FUNC(level, fmt, ...) fprintf(stderr, "%40s |" level " " fmt "\n", __FUNCTION__, ##__VA_ARGS__)
 /* #define DEBUG_FUNC(level, fmt, ...) fprintf(stderr, "%-10s(%3d)%22s |" level " " fmt "\n", __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__) */
@@ -36,7 +40,7 @@
  */
 static inline void
 H(const char* level, const char* leading, void* v, size_t len) {
-  fprintf(stderr, EGA_PREFIX "%s%s: ", level, leading);
+  fprintf(stderr, DEBUG_PREFIX "%s%s: ", level, leading);
     size_t _i = 0;
     uint8_t* _p = (uint8_t*)v;
     for(;_i<len;_i++){ fprintf(stderr, "%02x", _p[_i] ); }

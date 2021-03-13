@@ -2,8 +2,8 @@
 #include <unistd.h>
 #include <errno.h>
 
-#include "debug.h"
-#include "defs.h"
+#include "includes.h"
+
 #include "segment.h"
 #include "stream.h"
 

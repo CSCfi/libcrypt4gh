@@ -1,7 +1,7 @@
 #ifndef __CRYPT4GH_PACKET_H_INCLUDED__
 #define __CRYPT4GH_PACKET_H_INCLUDED__
 
-#include "defs.h"
+#include "crypt4gh/defs.h"
 
 #define CRYPT4GH_HEADER_DATA_PACKET_len (4U + 4U + CRYPT4GH_SESSION_KEY_SIZE)
 #define CRYPT4GH_HEADER_ENCRYPTED_DATA_PACKET_len (4U + 4U		             \

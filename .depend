@@ -2,10 +2,10 @@
 # Run "make depend" to rebuild.
 
 # DO NOT DELETE
-crypt4gh.o: debug.h header.h defs.h segment.h payload.h crypt4gh.h
-err.o: err.h
-header.o: debug.h defs.h header.h packet.h
-packet.o: debug.h defs.h header.h packet.h
-payload.o: debug.h defs.h segment.h payload.h
-segment.o: debug.h defs.h segment.h
-stream.o: debug.h defs.h segment.h stream.h
+src/crypt4gh.o: src/includes.h src/config.h src/debug.h ./src/include/crypt4gh/header.h ./src/include/crypt4gh/defs.h ./src/include/crypt4gh/segment.h ./src/include/crypt4gh/payload.h ./src/include/crypt4gh.h
+src/err.o: ./src/include/crypt4gh/err.h
+src/header.o: src/includes.h src/config.h src/debug.h ./src/include/crypt4gh/packet.h ./src/include/crypt4gh/defs.h ./src/include/crypt4gh/header.h
+src/packet.o: src/includes.h src/config.h src/debug.h ./src/include/crypt4gh/packet.h ./src/include/crypt4gh/defs.h
+src/payload.o: src/includes.h src/config.h src/debug.h ./src/include/crypt4gh/segment.h ./src/include/crypt4gh/defs.h ./src/include/crypt4gh/payload.h
+src/segment.o: src/includes.h src/config.h src/debug.h ./src/include/crypt4gh/segment.h ./src/include/crypt4gh/defs.h
+src/stream.o: src/includes.h src/config.h src/debug.h ./src/include/crypt4gh/segment.h ./src/include/crypt4gh/defs.h ./src/include/crypt4gh/stream.h

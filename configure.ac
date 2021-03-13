@@ -2,10 +2,16 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([libcrypt4gh], [1.0], [silverdaz@gmail.com])
+AC_INIT([libcrypt4gh],[1.0],
+  [https://github.com/silverdaz/libcrypt4gh/issues],
+  [libcrypt4gh],
+  [https://github.com/silverdaz/libcrypt4gh])
 
-AC_CONFIG_SRCDIR([crypt4gh.c])
-AC_CONFIG_HEADER([config.h])
+AC_CONFIG_SRCDIR([src/crypt4gh.c])
+AC_CONFIG_HEADER([src/config.h])
+
+LIBCRYPT4GH_VERSION=1.0
+AC_SUBST(LIBCRYPT4GH_VERSION)
 
 AC_LANG([C])
 
@@ -156,19 +162,22 @@ fi
 
 #######################################################
 
+debug_flag=no
 AC_ARG_WITH([debug],
 	[  --with-debug            Build main code with -g -DDEBUG=xxx],
 	[
 		if test -n "$withval"  &&  test "x$withval" != "xno"; then
-			case  "x${withval}" in
-			    x1|x2|x3)
- 			        DEFS="$DEFS -DDEBUG=${withval}"
-				CFLAGS="-g $CFLAGS"
-				;;
-				*)
-				CFLAGS="-g $CFLAGS"
-				;;
-			esac
+			CFLAGS="-g $CFLAGS"
+			DEFS="$DEFS -DDEBUG=${withval}"
+			debug_flag=yes
+		fi
+	]
+)
+AC_ARG_WITH([debug-prefix],
+	[  --with-debug-prefix            Use prefix in debug statements],
+	[
+		if "x${debug_flag}" = "xyes" && test -n "$withval" ; then
+			DEFS="$DEFS -DDEBUG_PREFIX=${withval}"
 		fi
 	]
 )
@@ -181,16 +190,14 @@ AC_SUBST([DEPEND], [$(cat $srcdir/.depend)])
 AC_CONFIG_FILES([Makefile
                 libcrypt4gh.pc])
 
-CFLAGS="$debug_flag $CFLAGS"
-
 AC_OUTPUT
 
 # Print summary of options
 
 echo ""
+echo "             Version: ${LIBCRYPT4GH_VERSION}"
 echo "            Compiler: ${CC}"
-echo "      Compiler flags: ${CFLAGS}"
-echo "  Preprocessor flags: ${CPPFLAGS}"
+echo "      Compiler flags: ${CFLAGS} ${DEFS}"
+#echo "  Preprocessor flags: ${CPPFLAGS}"
 echo "                LIBS: ${LIBS}"
-
 echo ""

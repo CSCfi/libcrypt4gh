@@ -2,8 +2,8 @@
 #include <errno.h>
 #include <sodium.h>
 
-#include "debug.h"
-#include "defs.h"
+#include "includes.h"
+
 #include "segment.h"
 
 

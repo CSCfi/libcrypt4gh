@@ -1,7 +1,7 @@
 #ifndef __CRYPT4GH_HEADER_H_INCLUDED__
 #define __CRYPT4GH_HEADER_H_INCLUDED__
 
-#include "defs.h"
+#include "crypt4gh/defs.h"
 
 int
 crypt4gh_header_build(const uint8_t session_key[CRYPT4GH_SESSION_KEY_SIZE], /* supporting one session key only */

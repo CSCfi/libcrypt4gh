@@ -18,6 +18,6 @@ includedir=@includedir@
 Name: libcrypt4gh
 URL: https://github.com/silverdaz/libcrypt4gh
 Description: Library to encrypt/decrypt files in Crypt4GH format
-Version: @CRYPT4GH_VERSION@
+Version: @LIBCRYPT4GH_VERSION@
 Libs: -L${libdir} -lcrypt4gh
 Cflags: -I${includedir}
